@@ -1,0 +1,36 @@
+{
+  "claim_id": "CLM-FRAUD",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "active",
+    "effective_date": "2026-01-01",
+    "expiry_date": "2026-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 3
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "self",
+    "police_report": false,
+    "description": "Scraped against a wall."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 1
+  },
+  "amount_claimed": 4200.0,
+  "intake": null,
+  "coverage": null,
+  "fraud": null,
+  "decision": null
+}

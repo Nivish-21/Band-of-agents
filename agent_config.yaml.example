@@ -1,0 +1,16 @@
+# Copy to agent_config.yaml and fill in the (agent_id, api_key) pairs from the
+# Band dashboard "Connect Remote Agent" modals. agent_config.yaml is gitignored.
+# load_agent_config("intake") returns (agent_id, api_key).
+
+intake:
+  agent_id: ""
+  api_key: ""
+coverage:
+  agent_id: ""
+  api_key: ""
+fraud:
+  agent_id: ""
+  api_key: ""
+adjudicator:
+  agent_id: ""
+  api_key: ""

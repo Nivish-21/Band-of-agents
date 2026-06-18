@@ -1,0 +1,36 @@
+{
+  "claim_id": "CLM-DENY",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "expired",
+    "effective_date": "2025-01-01",
+    "expiry_date": "2025-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 0
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "other_party",
+    "police_report": true,
+    "description": "Rear-ended at a stop light after policy expired."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 6
+  },
+  "amount_claimed": 4200.0,
+  "intake": null,
+  "coverage": null,
+  "fraud": null,
+  "decision": null
+}
