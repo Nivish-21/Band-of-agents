@@ -65,7 +65,7 @@ demo surface.
 | Slide Presentation | `docs/slides.pdf` (rendered from `slides.md`) | ready |
 | Video Presentation | script at `docs/recording-script.md` — **needs recording** | TODO (you) |
 | Public GitHub Repo | `github.com/Nivish-21/Band-of-agents` — **confirm it is public** + push latest | TODO (you) |
-| Application URL / Demo Platform | `web/` Next.js showcase — deploy to Vercel | ready to deploy |
+| Application URL / Demo Platform | **https://claimband-nivi-s-projects1.vercel.app** (live on Vercel) | deployed ✓ |
 
 ## Note on "Application URL / Demo Application Platform"
 A static showcase frontend now exists in `web/` (Next.js, dark control-room aesthetic). It (a) replays the
