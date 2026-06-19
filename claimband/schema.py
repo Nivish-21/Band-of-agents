@@ -135,9 +135,9 @@ def validate_claim(claim_data: dict) -> IntakeBlock:
     amt = claim_data.get("amount_claimed")
     if est is not None and amt is not None:
         try:
-            if float(est) != float(amt):
+            if float(amt) > float(est):
                 inconsistencies.append(
-                    f"Damage estimate_amount ({est}) does not match amount_claimed ({amt})"
+                    f"Amount claimed ({amt}) exceeds damage estimate ({est})"
                 )
         except (ValueError, TypeError):
             inconsistencies.append(

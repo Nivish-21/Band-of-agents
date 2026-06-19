@@ -79,9 +79,18 @@ def test_validate_claim_missing_fields(clean_claim_dict):
 
 def test_validate_claim_inconsistencies(clean_claim_dict):
     inconsistent_dict = clean_claim_dict.copy()
-    inconsistent_dict["amount_claimed"] = 5000.0  # estimate is 4200.0
+    inconsistent_dict["amount_claimed"] = 5000.0  # estimate is 4200.0 — claiming more
 
     block = validate_claim(inconsistent_dict)
     assert block.is_valid is False
-    assert any("does not match amount_claimed" in inc for inc in block.inconsistencies)
+    assert any("exceeds damage estimate" in inc for inc in block.inconsistencies)
     assert block.completeness_score == 100.0  # no fields missing
+
+
+def test_validate_claim_underclaim_is_valid(clean_claim_dict):
+    under_dict = clean_claim_dict.copy()
+    under_dict["amount_claimed"] = 4000.0  # estimate is 4200.0 — claiming less is fine
+
+    block = validate_claim(under_dict)
+    assert block.is_valid is True
+    assert len(block.inconsistencies) == 0

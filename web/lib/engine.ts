@@ -32,9 +32,9 @@ export function validateClaim(claim: ClaimRecord): NonNullable<IntakeBlock> {
   const est = claim.damage.estimate_amount;
   const amt = claim.amount_claimed;
 
-  if (est !== amt) {
+  if (amt > est) {
     inconsistencies.push(
-      `Damage estimate_amount (${est}) does not match amount_claimed (${amt})`,
+      `Amount claimed (${amt}) exceeds damage estimate (${est})`,
     );
   }
   if (amt <= 0) {
