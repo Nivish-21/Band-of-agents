@@ -30,7 +30,10 @@ AGENT_NAME = "fraud"
 
 
 def transform(record: ClaimRecord) -> ClaimRecord:
-    record.fraud = score_risk(record)
+    discovered_round = record.fraud.discovery_round if record.fraud is not None else 0
+    block = score_risk(record)
+    block.discovery_round = discovered_round
+    record.fraud = block
     return record
 
 
@@ -68,6 +71,19 @@ def summary(record: ClaimRecord) -> str:
     return f"Fraud risk score {block.risk_score}/100 — {flags}."
 
 
+def _should_rerun(record: ClaimRecord, inp: object) -> bool:
+    block = record.fraud
+    if block is None or block.discovery_round <= 0:
+        return False
+    msg = getattr(getattr(inp, "msg", None), "content", "") or ""
+    lowered = msg.lower()
+    return (
+        "re-score" in lowered
+        or "double-check" in lowered
+        or "peer discovery" in lowered
+    )
+
+
 async def note_fn(record: ClaimRecord) -> str:
     return await groq_note(f"Fraud screening result: {record.fraud.model_dump_json()}")
 
@@ -85,7 +101,14 @@ def _make_agent() -> Agent:
         custom_section=FRAUD_PROMPT,
     )
     adapter.on_event = make_relay_handler(
-        AGENT_NAME, agent_id, transform, summary, "fraud", note_fn, judge
+        AGENT_NAME,
+        agent_id,
+        transform,
+        summary,
+        "fraud",
+        note_fn,
+        judge,
+        reprocess_if=_should_rerun,
     )
     return Agent.create(
         adapter=adapter,

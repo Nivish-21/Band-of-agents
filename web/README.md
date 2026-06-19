@@ -39,5 +39,5 @@ cd web && vercel --prod
 
 ## Stack
 Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · `motion` (Framer Motion) ·
-`next/font` (Bricolage Grotesque / Archivo / JetBrains Mono). Design context lives in the repo-root
+system font stacks (display / body / mono). Design context lives in the repo-root
 `PRODUCT.md` and `DESIGN.md`.

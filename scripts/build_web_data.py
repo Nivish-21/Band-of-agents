@@ -72,6 +72,11 @@ SCENARIOS = {
         "label": "Fraud signals",
         "blurb": "Multiple red flags trip the risk threshold.",
     },
+    "ambiguous": {
+        "file": "dr3-ambiguous.txt",
+        "label": "Ambiguous risk",
+        "blurb": "Moderate risk triggers Band peer-discovery for a second opinion.",
+    },
 }
 
 _MSG_RE = re.compile(

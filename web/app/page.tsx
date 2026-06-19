@@ -23,7 +23,7 @@ const CRITERIA: { label: string; state: "pass" | "gap"; note: string }[] = [
   { label: "CLM-FRAUD → ESCALATE + human @mention", state: "pass", note: "risk 60, human-in-loop" },
   { label: "Different frameworks AND vendors at startup", state: "pass", note: "shown in startup banner" },
   { label: "No agent crash, WebSocket reconnect handled", state: "pass", note: "3/3 runs clean" },
-  { label: "Band peer-discovery on ambiguous-risk path", state: "gap", note: "designed, not yet demonstrated" },
+  { label: "Band peer-discovery on ambiguous-risk path", state: "gap", note: "wired in relay, live capture pending" },
 ];
 
 export default function Home() {
@@ -70,8 +70,8 @@ export default function Home() {
             Acceptance criteria — honestly
           </h2>
           <p className="mt-3 max-w-[65ch] text-sm text-ink-muted">
-            Five of six pass against the live runs. The sixth is built but not yet
-            demonstrated; a credible system names its edges.
+            Five of six pass against the live runs. The sixth is wired in code and
+            waiting on a fresh live room capture; a credible system names its edges.
           </p>
           <ul className="mt-7 space-y-2.5">
             {CRITERIA.map((c) => {

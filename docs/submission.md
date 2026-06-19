@@ -49,8 +49,8 @@ covered_amount > $10,000 → ESCALATE + human @mention. Otherwise APPROVE.
 @mentioned). A one-command runner (`demo.py`) reproduces any case. 43 automated tests pass locally.
 
 **Honest scope.** 5 of 6 internal acceptance criteria pass; Band peer-discovery/recruitment on the
-ambiguous-risk path is designed but not yet demonstrated. No frontend — the live Band room is the
-demo surface.
+ambiguous-risk path is now wired in code and covered by local tests, but a fresh live Band-room
+capture is still pending. No frontend — the live Band room is the demo surface.
 
 ## Technology & Category Tags
 `multi-agent` `Band` `cross-framework` `LangGraph` `CrewAI` `Gemini` `Groq` `pydantic`

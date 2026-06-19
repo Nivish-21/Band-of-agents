@@ -450,7 +450,7 @@ Data + frontend:
       without the model reasoning. Confirm the deployed URL shows the rationale and is public (200).
 - [ ] C5 — Commit + push everything (working tree has 11 modified files + `scripts/capture_reasoning.py`,
       all uncommitted on `main`). Update `docs/status.md` + `docs/changelog.md` with what actually shipped.
-- [ ] (stretch) C6 — Real Band peer-discovery/recruitment event on ambiguous risk (criterion 5, still a gap).
+- [x] C6 — Real Band peer-discovery/recruitment event on ambiguous risk (criterion 5). Live-demonstrated 2026-06-19: `claims/ambiguous.json` (rule_risk=40, narrative_risk=0, total=40) → adjudicator `lookup_peers()` + `add_participant()` + re-score request → Fraud re-scored (`discovery_round=1`) → APPROVE $3,700. See `docs/evidence/dr3-ambiguous.txt`.
 
 ### Acceptance (what CLAUDE will cold-verify)
 - The deployed site shows a genuine model rationale per the captured runs (esp. Fraud reading the story).

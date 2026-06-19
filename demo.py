@@ -35,7 +35,7 @@ import dump_room_trail
 import seed as seed_module
 
 AGENTS: list[str] = ["intake", "coverage", "fraud", "adjudicator"]
-FIXTURES: list[str] = ["clean.json", "deny.json", "fraud.json"]
+FIXTURES: list[str] = ["clean.json", "deny.json", "fraud.json", "ambiguous.json"]
 
 PREFLIGHT_TIMEOUT_S: float = 45.0
 RELAY_TIMEOUT_S: float = 200.0

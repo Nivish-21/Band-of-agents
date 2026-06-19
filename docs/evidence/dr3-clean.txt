@@ -1,6 +1,6 @@
 Total unique messages found across all agents: 5
 
---- MESSAGE #1 | Sender: Coverage | Time: 2026-06-19 04:30:51.006908+00:00 | ID: a3dbf32d-afdb-4ad5-8813-3427791fae1e ---
+--- MESSAGE #1 | Sender: Coverage | Time: 2026-06-19 13:56:08.542365+00:00 | ID: 2110c777-d62b-43e8-8979-abfd4ed31b98 ---
 @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] New claim submitted for review:
 ```json
 {
@@ -42,7 +42,7 @@ Total unique messages found across all agents: 5
 ```
 Please validate.
 
---- MESSAGE #2 | Sender: Intake | Time: 2026-06-19 04:30:53.508056+00:00 | ID: b032e84d-0ba6-4b7d-93f5-8d3805a5f538 ---
+--- MESSAGE #2 | Sender: Intake | Time: 2026-06-19 13:56:36.089607+00:00 | ID: 8288d3e9-6e65-4310-80c8-4d6db58ab701 ---
 **Intake Agent** — Claim intake is valid with no missing fields or inconsistencies.
 
 Handing off to @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] for the next step.
@@ -91,8 +91,8 @@ Handing off to @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] for the next step.
 }
 ```
 
---- MESSAGE #3 | Sender: Coverage | Time: 2026-06-19 04:30:56.701306+00:00 | ID: 75e961c0-be1c-4e5f-8469-94def0e738d9 ---
-**Coverage Agent** — Policy is active, peril covered, $500 deductible applied, resulting in a $3,700.00 covered amount.
+--- MESSAGE #3 | Sender: Coverage | Time: 2026-06-19 13:56:49.752811+00:00 | ID: 3b7f45f4-feac-4282-a12b-56c89f260f2d ---
+**Coverage Agent** — Policy active, peril covered; payout is $3,700 after $500 deductible.
 
 Handing off to @[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] for the next step.
 
@@ -140,10 +140,11 @@ Handing off to @[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] for the next step.
     "deductible_applied": 500,
     "covered_amount": 3700.0,
     "reasons": [
-      "Policy status is active.",
-      "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
-      "Peril 'collision' is explicitly covered under the policy.",
-      "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+      "The policy is active for the incident date (2026-06-10 falls between 2026-01-01 and 2026-12-31).",
+      "The incident type is collision, which is covered by the policy.",
+      "The coverage amount is calculated using the formula: min(estimate, limit) - deductible.",
+      "min($4,200 (estimate), $50,000 (limit)) = $4,200.",
+      "Subtracting the deductible: $4,200 - $500 = $3,700."
     ]
   },
   "fraud": null,
@@ -151,8 +152,8 @@ Handing off to @[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] for the next step.
 }
 ```
 
---- MESSAGE #4 | Sender: Fraud | Time: 2026-06-19 04:30:59.813339+00:00 | ID: cfdcc1b1-458f-487c-a2f8-53f1f9be30ac ---
-**Fraud Agent** — Claim appears legitimate with a risk score of 0 and no red flags.
+--- MESSAGE #4 | Sender: Fraud | Time: 2026-06-19 13:56:54.590798+00:00 | ID: 09df85b9-5b71-4b1c-bb66-2b49c62b75f5 ---
+**Fraud Agent** — Claim appears legitimate with no red flags and a low risk score of 0.
 
 Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
 
@@ -200,10 +201,11 @@ Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
     "deductible_applied": 500,
     "covered_amount": 3700.0,
     "reasons": [
-      "Policy status is active.",
-      "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
-      "Peril 'collision' is explicitly covered under the policy.",
-      "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+      "The policy is active for the incident date (2026-06-10 falls between 2026-01-01 and 2026-12-31).",
+      "The incident type is collision, which is covered by the policy.",
+      "The coverage amount is calculated using the formula: min(estimate, limit) - deductible.",
+      "min($4,200 (estimate), $50,000 (limit)) = $4,200.",
+      "Subtracting the deductible: $4,200 - $500 = $3,700."
     ]
   },
   "fraud": {
@@ -216,15 +218,20 @@ Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
       "Claimant is the policy holder.",
       "Claim amount ($4,200.00) is below the high-risk threshold.",
       "Incident occurred 160 day(s) after policy effective date.",
-      "Calculated risk score: 0 based on 0 triggered red flag(s)."
-    ]
+      "Calculated risk score: 0 based on 0 triggered red flag(s).",
+      "LLM narrative judgment (+0): Consistent rear-end collision damage and claim amount."
+    ],
+    "rule_risk": 0,
+    "narrative_risk": 0,
+    "narrative_rationale": "Consistent rear-end collision damage and claim amount.",
+    "discovery_round": 0
   },
   "decision": null
 }
 ```
 
---- MESSAGE #5 | Sender: Adjudicator | Time: 2026-06-19 04:31:03.014437+00:00 | ID: 7d7ef008-35a0-427a-a6ea-52a20ad9d67a ---
-@[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] @[[5f4ed8cf-e454-4854-a1cc-d57b1c296d9c]] **Adjudicator Agent** — Claim approved for $3700 based on policy coverage and low risk score.
+--- MESSAGE #5 | Sender: Adjudicator | Time: 2026-06-19 13:56:59.789400+00:00 | ID: 99a5406f-db7c-4c74-8447-b082caa89751 ---
+@[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] @[[5f4ed8cf-e454-4854-a1cc-d57b1c296d9c]] **Adjudicator Agent** — Claim approved for $3,700, policy is active and fraud risk is low.
 
 Final decision: **APPROVE**.
 
@@ -272,10 +279,11 @@ Final decision: **APPROVE**.
     "deductible_applied": 500,
     "covered_amount": 3700.0,
     "reasons": [
-      "Policy status is active.",
-      "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
-      "Peril 'collision' is explicitly covered under the policy.",
-      "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+      "The policy is active for the incident date (2026-06-10 falls between 2026-01-01 and 2026-12-31).",
+      "The incident type is collision, which is covered by the policy.",
+      "The coverage amount is calculated using the formula: min(estimate, limit) - deductible.",
+      "min($4,200 (estimate), $50,000 (limit)) = $4,200.",
+      "Subtracting the deductible: $4,200 - $500 = $3,700."
     ]
   },
   "fraud": {
@@ -288,12 +296,17 @@ Final decision: **APPROVE**.
       "Claimant is the policy holder.",
       "Claim amount ($4,200.00) is below the high-risk threshold.",
       "Incident occurred 160 day(s) after policy effective date.",
-      "Calculated risk score: 0 based on 0 triggered red flag(s)."
-    ]
+      "Calculated risk score: 0 based on 0 triggered red flag(s).",
+      "LLM narrative judgment (+0): Consistent rear-end collision damage and claim amount."
+    ],
+    "rule_risk": 0,
+    "narrative_risk": 0,
+    "narrative_rationale": "Consistent rear-end collision damage and claim amount.",
+    "discovery_round": 0
   },
   "decision": {
     "status": "APPROVE",
-    "reason": "Claim approved automatically based on policy coverage and low risk score.",
+    "reason": "The policy is active on the incident date, the fraud risk score is low (0) and the covered amount ($3,700) is well below the escalation threshold. All hard rules point to approval, so the claim is approved for the covered amount.",
     "final_amount": 3700.0
   }
 }

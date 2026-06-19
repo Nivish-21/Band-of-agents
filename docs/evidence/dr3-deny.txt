@@ -1,6 +1,6 @@
 Total unique messages found across all agents: 5
 
---- MESSAGE #1 | Sender: Coverage | Time: 2026-06-19 04:32:54.775179+00:00 | ID: 4b976c3b-2fe0-423f-8162-516db4a1e41f ---
+--- MESSAGE #1 | Sender: Coverage | Time: 2026-06-19 13:57:38.526211+00:00 | ID: 40528d92-df1c-4774-94f9-08a3499aaa5d ---
 @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] New claim submitted for review:
 ```json
 {
@@ -42,7 +42,7 @@ Total unique messages found across all agents: 5
 ```
 Please validate.
 
---- MESSAGE #2 | Sender: Intake | Time: 2026-06-19 04:33:06.217278+00:00 | ID: 85c8a4ff-41e6-4f50-b760-e7b9257ded13 ---
+--- MESSAGE #2 | Sender: Intake | Time: 2026-06-19 13:57:53.404823+00:00 | ID: 46125769-5d7c-4513-989b-e024300ab780 ---
 **Intake Agent** — Claim intake is valid with no missing fields or inconsistencies.
 
 Handing off to @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] for the next step.
@@ -91,8 +91,8 @@ Handing off to @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] for the next step.
 }
 ```
 
---- MESSAGE #3 | Sender: Coverage | Time: 2026-06-19 04:33:09.558152+00:00 | ID: 238953c3-2e0b-4258-a601-201ebd66bb1d ---
-**Coverage Agent** — Policy expired before incident date; no coverage despite peril being covered.
+--- MESSAGE #3 | Sender: Coverage | Time: 2026-06-19 13:58:10.826431+00:00 | ID: ebfc50ea-8e3b-49cd-92d9-4ea4583c9a55 ---
+**Coverage Agent** — Policy is expired, incident outside coverage dates, so claim is denied despite covered peril.
 
 Handing off to @[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] for the next step.
 
@@ -151,8 +151,8 @@ Handing off to @[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] for the next step.
 }
 ```
 
---- MESSAGE #4 | Sender: Fraud | Time: 2026-06-19 04:33:17.194166+00:00 | ID: a9254464-7c93-447e-a411-6eb76c0e468f ---
-**Fraud Agent** — Claim appears legitimate with a risk score of 0 and no red flags.
+--- MESSAGE #4 | Sender: Fraud | Time: 2026-06-19 13:58:16.877852+00:00 | ID: 4e739f72-4280-4cfe-8bfb-5a7050226f8f ---
+**Fraud Agent** — Claim is suspicious due to incident occurring after policy expiration.
 
 Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
 
@@ -207,7 +207,7 @@ Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
     ]
   },
   "fraud": {
-    "risk_score": 0,
+    "risk_score": 30,
     "red_flags": [],
     "reasons": [
       "Police report was filed.",
@@ -216,15 +216,20 @@ Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
       "Claimant is the policy holder.",
       "Claim amount ($4,200.00) is below the high-risk threshold.",
       "Incident occurred 525 day(s) after policy effective date.",
-      "Calculated risk score: 0 based on 0 triggered red flag(s)."
-    ]
+      "Calculated risk score: 0 based on 0 triggered red flag(s).",
+      "LLM narrative judgment (+30): Claimed incident after policy expiration is suspicious."
+    ],
+    "rule_risk": 0,
+    "narrative_risk": 30,
+    "narrative_rationale": "Claimed incident after policy expiration is suspicious.",
+    "discovery_round": 0
   },
   "decision": null
 }
 ```
 
---- MESSAGE #5 | Sender: Adjudicator | Time: 2026-06-19 04:33:22.675468+00:00 | ID: 60a214e4-4f27-4576-9d75-6255091223ae ---
-@[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] @[[5f4ed8cf-e454-4854-a1cc-d57b1c296d9c]] **Adjudicator Agent** — Claim is denied due to inactive policy at incident date.
+--- MESSAGE #5 | Sender: Adjudicator | Time: 2026-06-19 13:58:22.046557+00:00 | ID: 1739c758-2c4a-4d30-bc82-8773742a5a88 ---
+@[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] @[[5f4ed8cf-e454-4854-a1cc-d57b1c296d9c]] **Adjudicator Agent** — Claim denied due to expired policy on incident date.
 
 Final decision: **DENY**.
 
@@ -279,7 +284,7 @@ Final decision: **DENY**.
     ]
   },
   "fraud": {
-    "risk_score": 0,
+    "risk_score": 30,
     "red_flags": [],
     "reasons": [
       "Police report was filed.",
@@ -288,12 +293,17 @@ Final decision: **DENY**.
       "Claimant is the policy holder.",
       "Claim amount ($4,200.00) is below the high-risk threshold.",
       "Incident occurred 525 day(s) after policy effective date.",
-      "Calculated risk score: 0 based on 0 triggered red flag(s)."
-    ]
+      "Calculated risk score: 0 based on 0 triggered red flag(s).",
+      "LLM narrative judgment (+30): Claimed incident after policy expiration is suspicious."
+    ],
+    "rule_risk": 0,
+    "narrative_risk": 30,
+    "narrative_rationale": "Claimed incident after policy expiration is suspicious.",
+    "discovery_round": 0
   },
   "decision": {
     "status": "DENY",
-    "reason": "Policy is inactive at incident date. Reasons: Policy status is 'expired' (expected 'active').; Incident date 2026-06-10 falls outside the policy period (2025-01-01 to 2025-12-31).; Peril 'collision' is explicitly covered under the policy.; Claim coverage check failed; covered amount set to $0.00.",
+    "reason": "Policy expired on 2025-12-31 and was not active on the incident date 2026-06-10, violating hard rule 1 which requires denial when the policy is not active.",
     "final_amount": 0.0
   }
 }

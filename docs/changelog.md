@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-06-19 — LLM judges for Coverage + Adjudicator: agents now genuinely decide (Claude)
+
+**Architecture change:** The deterministic `transform` functions are now *guardrails*, not decision-makers. Every agent's `judge_fn` calls a real LLM to reason about the claim, and hard-rule validation catches violations.
+
+- **Coverage agent** gained `judge()`: calls **Gemini 2.5 Flash** with the policy + claim info. Gemini reasons step by step about policy period, peril coverage, and the formula. Output parsed into `CoverageBlock.reasons` — now shows natural text like *"The policy is active for the incident date (2026-06-10 falls between 2026-01-01 and 2026-12-31)"*. Falls back to rule result on any error/503.
+- **Adjudicator agent** gained `judge()`: calls **Groq gpt-oss-120b** with all three peer findings. Groq reasons about the combined evidence and outputs APPROVE/DENY/ESCALATE with a natural-language explanation in `DecisionBlock.reason`. Hard rules enforced as overrides (can't approve expired policy, must escalate at threshold).
+- **Live-verified on all 4 fixtures:** clean→APPROVE with Gemini coverage reasoning, deny→DENY with Groq adjudicator reasoning, fraud→ESCALATE with model noting risk score 90, ambiguous→APPROVE with peer-discovery intact. Gemini 503 on coverage judge handled via rule fallback (resilient by design).
+- Web data rebuilt with real LLM reasoning; `next build --webpack` clean.
+- 44 tests pass, `black --check` clean on 33 files.
+
+## 2026-06-19 — Criterion 5 peer-discovery: new fixture + live-verified, rooms listed for cleanup (Claude)
+- **Criterion 5 → PASS.** Added `claims/ambiguous.json` (2 red flags → rule_risk=40, clean narrative → narrative_risk=0, total=40 lands in 40-60 discovery band). Live relay via `demo.py` confirmed the full peer-discovery flow: adjudicator called `lookup_peers()`, recruited Fraud via `add_participant`, sent re-score request → Fraud re-scored with `discovery_round=1` → adjudicator decided APPROVE $3,700. 7 messages in trail (inc. discovery round-trip). Acceptance criteria net: **6 PASS, 0 FAIL**.
+- Listed all 13 rooms with creation dates. User chose to keep 3 evidence rooms, delete 10 orphans. Deletion blocked: Band SDK/API exposes no room-delete endpoint — requires dashboard UI.
+- Added `ambiguous.json` to `demo.py` FIXTURES list so `--all` includes it.
+- Rebuilt web data (`scenarios.json` now includes CLM-AMBIG, 7 messages, discovery visible) + web frontend `next build --webpack` clean.
+- 44 tests pass, `black --check` clean on 33 files.
+
 ## 2026-06-19 — D15 local verification hardening (Codex)
 - Added `conftest.py` so `./.venv/bin/pytest -q` works from the repo root without manually exporting
   `PYTHONPATH=.`.
@@ -123,6 +140,12 @@ Addresses two judge-facing gaps: judges couldn't test their own inputs, and the 
 - **Verification:** All 3 fixtures (`clean.json`, `deny.json`, `fraud.json`) successfully complete the 4-agent relay.
 - **Orchestration:** Added `run_all.py` for concurrent agent startup with Room ID assertion. Updated `README.md` to match.
 - **Project ready for submission.**
+
+## 2026-06-19 — Peer-discovery wiring landed (Codex)
+- **Peer-discovery:** the adjudicator now recruits Fraud on the ambiguous-risk path via Band peer discovery, and Fraud will rerun once on the discovery nudge.
+- **Relay hook:** `claimband/relay.py` gained a guarded pre-action hook and rerun predicate so the discovery hop stays deterministic and bounded.
+- **Verification:** local suite remains green (`44` tests) and `black --check` passes after the patch.
+- **Honesty:** the live Band-room capture for criterion 5 still needs a fresh run; the status table remains `FAIL (not demonstrated)` until that evidence is recorded.
 
 ## 2026-06-19 — DR3 evidence redone properly + submission assets (Claude, autonomous)
 **Why:** the prior "Phase 6 complete / fraud→ESCALATE verified" claim was false — the three

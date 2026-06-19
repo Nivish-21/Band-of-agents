@@ -36,7 +36,7 @@
       "blurb": "A valid, low-risk collision claim.",
       "claim_id": "CLM-CLEAN",
       "outcome": "APPROVE",
-      "reason": "Claim approved automatically based on policy coverage and low risk score.",
+      "reason": "The policy is active on the incident date, the fraud risk score is low (0) and the covered amount ($3,700) is well below the escalation threshold. All hard rules point to approval, so the claim is approved for the covered amount.",
       "final_amount": 3700.0,
       "claim": {
         "claim_id": "CLM-CLEAN",
@@ -117,10 +117,11 @@
           "deductible_applied": 500,
           "covered_amount": 3700.0,
           "reasons": [
-            "Policy status is active.",
-            "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
-            "Peril 'collision' is explicitly covered under the policy.",
-            "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+            "The policy is active for the incident date (2026-06-10 falls between 2026-01-01 and 2026-12-31).",
+            "The incident type is collision, which is covered by the policy.",
+            "The coverage amount is calculated using the formula: min(estimate, limit) - deductible.",
+            "min($4,200 (estimate), $50,000 (limit)) = $4,200.",
+            "Subtracting the deductible: $4,200 - $500 = $3,700."
           ]
         },
         "fraud": {
@@ -133,15 +134,17 @@
             "Claimant is the policy holder.",
             "Claim amount ($4,200.00) is below the high-risk threshold.",
             "Incident occurred 160 day(s) after policy effective date.",
-            "Calculated risk score: 0 based on 0 triggered red flag(s)."
+            "Calculated risk score: 0 based on 0 triggered red flag(s).",
+            "LLM narrative judgment (+0): Consistent rear-end collision damage and claim amount."
           ],
           "rule_risk": 0,
           "narrative_risk": 0,
-          "narrative_rationale": "Consistent rear-end collision damage and claim amount."
+          "narrative_rationale": "Consistent rear-end collision damage and claim amount.",
+          "discovery_round": 0
         },
         "decision": {
           "status": "APPROVE",
-          "reason": "Claim approved automatically based on policy coverage and low risk score.",
+          "reason": "The policy is active on the incident date, the fraud risk score is low (0) and the covered amount ($3,700) is well below the escalation threshold. All hard rules point to approval, so the claim is approved for the covered amount.",
           "final_amount": 3700.0
         }
       },
@@ -149,32 +152,32 @@
         {
           "n": 1,
           "sender": "Coverage",
-          "time": "2026-06-19 04:30:51.006908+00:00",
+          "time": "2026-06-19 13:56:08.542365+00:00",
           "content": "@intake New claim submitted for review:\nPlease validate."
         },
         {
           "n": 2,
           "sender": "Intake",
-          "time": "2026-06-19 04:30:53.508056+00:00",
+          "time": "2026-06-19 13:56:36.089607+00:00",
           "content": "Intake Agent \u2014 Claim intake is valid with no missing fields or inconsistencies.\nHanding off to @coverage for the next step."
         },
         {
           "n": 3,
           "sender": "Coverage",
-          "time": "2026-06-19 04:30:56.701306+00:00",
-          "content": "Coverage Agent \u2014 Policy is active, peril covered, $500 deductible applied, resulting in a $3,700.00 covered amount.\nHanding off to @fraud for the next step."
+          "time": "2026-06-19 13:56:49.752811+00:00",
+          "content": "Coverage Agent \u2014 Policy active, peril covered; payout is $3,700 after $500 deductible.\nHanding off to @fraud for the next step."
         },
         {
           "n": 4,
           "sender": "Fraud",
-          "time": "2026-06-19 04:30:59.813339+00:00",
-          "content": "Fraud Agent \u2014 Claim appears legitimate with a risk score of 0 and no red flags.\nHanding off to @adjudicator for the next step."
+          "time": "2026-06-19 13:56:54.590798+00:00",
+          "content": "Fraud Agent \u2014 Claim appears legitimate with no red flags and a low risk score of 0.\nHanding off to @adjudicator for the next step."
         },
         {
           "n": 5,
           "sender": "Adjudicator",
-          "time": "2026-06-19 04:31:03.014437+00:00",
-          "content": "@fraud @coverage @intake @nivishnick2k (human) Adjudicator Agent \u2014 Claim approved for $3700 based on policy coverage and low risk score.\nFinal decision: APPROVE."
+          "time": "2026-06-19 13:56:59.789400+00:00",
+          "content": "@fraud @coverage @intake @nivishnick2k (human) Adjudicator Agent \u2014 Claim approved for $3,700, policy is active and fraud risk is low.\nFinal decision: APPROVE."
         }
       ]
     },
@@ -184,7 +187,7 @@
       "blurb": "Policy lapsed before the incident date.",
       "claim_id": "CLM-DENY",
       "outcome": "DENY",
-      "reason": "Policy is inactive at incident date. Reasons: Policy status is 'expired' (expected 'active').; Incident date 2026-06-10 falls outside the policy period (2025-01-01 to 2025-12-31).; Peril 'collision' is explicitly covered under the policy.; Claim coverage check failed; covered amount set to $0.00.",
+      "reason": "Policy expired on 2025-12-31 and was not active on the incident date 2026-06-10, violating hard rule 1 which requires denial when the policy is not active.",
       "final_amount": 0.0,
       "claim": {
         "claim_id": "CLM-DENY",
@@ -272,7 +275,7 @@
           ]
         },
         "fraud": {
-          "risk_score": 0,
+          "risk_score": 30,
           "red_flags": [],
           "reasons": [
             "Police report was filed.",
@@ -281,15 +284,17 @@
             "Claimant is the policy holder.",
             "Claim amount ($4,200.00) is below the high-risk threshold.",
             "Incident occurred 525 day(s) after policy effective date.",
-            "Calculated risk score: 0 based on 0 triggered red flag(s)."
+            "Calculated risk score: 0 based on 0 triggered red flag(s).",
+            "LLM narrative judgment (+30): Claimed incident after policy expiration is suspicious."
           ],
           "rule_risk": 0,
           "narrative_risk": 30,
-          "narrative_rationale": "Claimed incident after policy expiration is suspicious."
+          "narrative_rationale": "Claimed incident after policy expiration is suspicious.",
+          "discovery_round": 0
         },
         "decision": {
           "status": "DENY",
-          "reason": "Policy is inactive at incident date. Reasons: Policy status is 'expired' (expected 'active').; Incident date 2026-06-10 falls outside the policy period (2025-01-01 to 2025-12-31).; Peril 'collision' is explicitly covered under the policy.; Claim coverage check failed; covered amount set to $0.00.",
+          "reason": "Policy expired on 2025-12-31 and was not active on the incident date 2026-06-10, violating hard rule 1 which requires denial when the policy is not active.",
           "final_amount": 0.0
         }
       },
@@ -297,32 +302,32 @@
         {
           "n": 1,
           "sender": "Coverage",
-          "time": "2026-06-19 04:32:54.775179+00:00",
+          "time": "2026-06-19 13:57:38.526211+00:00",
           "content": "@intake New claim submitted for review:\nPlease validate."
         },
         {
           "n": 2,
           "sender": "Intake",
-          "time": "2026-06-19 04:33:06.217278+00:00",
+          "time": "2026-06-19 13:57:53.404823+00:00",
           "content": "Intake Agent \u2014 Claim intake is valid with no missing fields or inconsistencies.\nHanding off to @coverage for the next step."
         },
         {
           "n": 3,
           "sender": "Coverage",
-          "time": "2026-06-19 04:33:09.558152+00:00",
-          "content": "Coverage Agent \u2014 Policy expired before incident date; no coverage despite peril being covered.\nHanding off to @fraud for the next step."
+          "time": "2026-06-19 13:58:10.826431+00:00",
+          "content": "Coverage Agent \u2014 Policy is expired, incident outside coverage dates, so claim is denied despite covered peril.\nHanding off to @fraud for the next step."
         },
         {
           "n": 4,
           "sender": "Fraud",
-          "time": "2026-06-19 04:33:17.194166+00:00",
-          "content": "Fraud Agent \u2014 Claim appears legitimate with a risk score of 0 and no red flags.\nHanding off to @adjudicator for the next step."
+          "time": "2026-06-19 13:58:16.877852+00:00",
+          "content": "Fraud Agent \u2014 Claim is suspicious due to incident occurring after policy expiration.\nHanding off to @adjudicator for the next step."
         },
         {
           "n": 5,
           "sender": "Adjudicator",
-          "time": "2026-06-19 04:33:22.675468+00:00",
-          "content": "@fraud @coverage @intake @nivishnick2k (human) Adjudicator Agent \u2014 Claim is denied due to inactive policy at incident date.\nFinal decision: DENY."
+          "time": "2026-06-19 13:58:22.046557+00:00",
+          "content": "@fraud @coverage @intake @nivishnick2k (human) Adjudicator Agent \u2014 Claim denied due to expired policy on incident date.\nFinal decision: DENY."
         }
       ]
     },
@@ -332,8 +337,8 @@
       "blurb": "Multiple red flags trip the risk threshold.",
       "claim_id": "CLM-FRAUD",
       "outcome": "ESCALATE",
-      "reason": "High risk score detected (60 >= 60). Red flags: No police report filed for the incident.; Claimant has 3 prior claim(s) in the last 12 months.; Low photo count (1 photos provided, minimum of 3 expected).",
-      "final_amount": 3700.0,
+      "reason": "Risk score 90 exceeds the 60 threshold, indicating high fraud risk per rule 2; claim must be escalated for further review.",
+      "final_amount": 0.0,
       "claim": {
         "claim_id": "CLM-FRAUD",
         "policy": {
@@ -413,14 +418,15 @@
           "deductible_applied": 500,
           "covered_amount": 3700.0,
           "reasons": [
-            "Policy status is active.",
-            "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
-            "Peril 'collision' is explicitly covered under the policy.",
-            "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+            "The policy is active for the incident date of 2026-06-10 (policy dates: 2026-01-01 to 2026-12-31).",
+            "The incident type 'collision' is covered according to the policy.",
+            "The covered amount is calculated as min(estimate, limit) - deductible.",
+            "min($4,200 (estimate), $50,000 (limit)) = $4,200.",
+            "$4,200 - $500 (deductible) = $3,700."
           ]
         },
         "fraud": {
-          "risk_score": 60,
+          "risk_score": 90,
           "red_flags": [
             "No police report filed for the incident.",
             "Claimant has 3 prior claim(s) in the last 12 months.",
@@ -433,15 +439,170 @@
             "Claimant is the policy holder.",
             "Claim amount ($4,200.00) is below the high-risk threshold.",
             "Incident occurred 160 day(s) after policy effective date.",
-            "Calculated risk score: 60 based on 3 triggered red flag(s)."
+            "Calculated risk score: 60 based on 3 triggered red flag(s).",
+            "LLM narrative judgment (+30): Excessive damage estimate for minor scrape incident."
           ],
           "rule_risk": 60,
           "narrative_risk": 30,
-          "narrative_rationale": "Excessive damage estimate for minor scrape incident."
+          "narrative_rationale": "Excessive damage estimate for minor scrape incident.",
+          "discovery_round": 0
         },
         "decision": {
           "status": "ESCALATE",
-          "reason": "High risk score detected (60 >= 60). Red flags: No police report filed for the incident.; Claimant has 3 prior claim(s) in the last 12 months.; Low photo count (1 photos provided, minimum of 3 expected).",
+          "reason": "Risk score 90 exceeds the 60 threshold, indicating high fraud risk per rule 2; claim must be escalated for further review.",
+          "final_amount": 0.0
+        }
+      },
+      "messages": [
+        {
+          "n": 1,
+          "sender": "Coverage",
+          "time": "2026-06-19 13:59:00.618109+00:00",
+          "content": "@intake New claim submitted for review:\nPlease validate."
+        },
+        {
+          "n": 2,
+          "sender": "Intake",
+          "time": "2026-06-19 13:59:08.508044+00:00",
+          "content": "Intake Agent \u2014 Claim intake is valid with no missing fields or inconsistencies.\nHanding off to @coverage for the next step."
+        },
+        {
+          "n": 3,
+          "sender": "Coverage",
+          "time": "2026-06-19 13:59:22.379852+00:00",
+          "content": "Coverage Agent \u2014 Covered: $3,700 payable after $500 deductible.\nHanding off to @fraud for the next step."
+        },
+        {
+          "n": 4,
+          "sender": "Fraud",
+          "time": "2026-06-19 13:59:27.512752+00:00",
+          "content": "Fraud Agent \u2014 Claim appears fraudulent due to red flags and excessive damage estimate.\nHanding off to @adjudicator for the next step."
+        },
+        {
+          "n": 5,
+          "sender": "Adjudicator",
+          "time": "2026-06-19 13:59:33.315749+00:00",
+          "content": "@fraud @coverage @intake Adjudicator Agent \u2014 Claim is escalated due to high fraud risk with a risk score of 90.\n@nivishnick2k (human) this claim is ESCALATED for human review."
+        }
+      ]
+    },
+    "ambiguous": {
+      "key": "ambiguous",
+      "label": "Ambiguous risk",
+      "blurb": "Moderate risk triggers Band peer-discovery for a second opinion.",
+      "claim_id": "CLM-AMBIG",
+      "outcome": "APPROVE",
+      "reason": "Policy is active on the incident date and the claim meets all coverage criteria. The fraud risk score (40) is below the escalation threshold (60) and the covered amount ($3,700) is well under $10,000. Therefore the claim is approved for the covered amount.",
+      "final_amount": 3700.0,
+      "claim": {
+        "claim_id": "CLM-AMBIG",
+        "policy": {
+          "policy_id": "POL-552",
+          "status": "active",
+          "effective_date": "2026-06-01",
+          "expiry_date": "2026-12-31",
+          "coverage": {
+            "collision": true,
+            "liability_limit": 50000,
+            "deductible": 500
+          }
+        },
+        "claimant": {
+          "name": "Jane Doe",
+          "is_policy_holder": true,
+          "prior_claims_12mo": 0
+        },
+        "incident": {
+          "date": "2026-06-10",
+          "type": "collision",
+          "at_fault": "other_party",
+          "police_report": true,
+          "description": "Rear-ended at a stop light. Other driver at fault. Police report filed. Tow truck brought car to approved repair shop. Damage estimate from certified mechanic."
+        },
+        "damage": {
+          "vehicle": "2021 Honda Civic",
+          "estimate_amount": 4200.0,
+          "photos_count": 2
+        },
+        "amount_claimed": 4200.0,
+        "intake": null,
+        "coverage": null,
+        "fraud": null,
+        "decision": null
+      },
+      "record": {
+        "claim_id": "CLM-AMBIG",
+        "policy": {
+          "policy_id": "POL-552",
+          "status": "active",
+          "effective_date": "2026-06-01",
+          "expiry_date": "2026-12-31",
+          "coverage": {
+            "collision": true,
+            "liability_limit": 50000,
+            "deductible": 500
+          }
+        },
+        "claimant": {
+          "name": "Jane Doe",
+          "is_policy_holder": true,
+          "prior_claims_12mo": 0
+        },
+        "incident": {
+          "date": "2026-06-10",
+          "type": "collision",
+          "at_fault": "other_party",
+          "police_report": true,
+          "description": "Rear-ended at a stop light. Other driver at fault. Police report filed. Tow truck brought car to approved repair shop. Damage estimate from certified mechanic."
+        },
+        "damage": {
+          "vehicle": "2021 Honda Civic",
+          "estimate_amount": 4200.0,
+          "photos_count": 2
+        },
+        "amount_claimed": 4200.0,
+        "intake": {
+          "is_valid": true,
+          "missing_fields": [],
+          "inconsistencies": [],
+          "completeness_score": 100.0
+        },
+        "coverage": {
+          "policy_active": true,
+          "peril_covered": true,
+          "deductible_applied": 500,
+          "covered_amount": 3700.0,
+          "reasons": [
+            "Policy status is active.",
+            "Incident date 2026-06-10 is within the policy period (2026-06-01 to 2026-12-31).",
+            "Peril 'collision' is explicitly covered under the policy.",
+            "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+          ]
+        },
+        "fraud": {
+          "risk_score": 40,
+          "red_flags": [
+            "Low photo count (2 photos provided, minimum of 3 expected).",
+            "Incident occurred 9 day(s) after policy activation (within 30-day window)."
+          ],
+          "reasons": [
+            "Police report was filed.",
+            "Claimant has no prior claims in the last 12 months.",
+            "Red Flag Triggered: Low photo count (2 photos provided, minimum of 3 expected).",
+            "Claimant is the policy holder.",
+            "Claim amount ($4,200.00) is below the high-risk threshold.",
+            "Red Flag Triggered: Incident occurred 9 day(s) after policy activation (within 30-day window).",
+            "Calculated risk score: 40 based on 2 triggered red flag(s).",
+            "LLM narrative judgment (+0): Consistent narrative and supporting documentation."
+          ],
+          "rule_risk": 40,
+          "narrative_risk": 0,
+          "narrative_rationale": "Consistent narrative and supporting documentation.",
+          "discovery_round": 1
+        },
+        "decision": {
+          "status": "APPROVE",
+          "reason": "Policy is active on the incident date and the claim meets all coverage criteria. The fraud risk score (40) is below the escalation threshold (60) and the covered amount ($3,700) is well under $10,000. Therefore the claim is approved for the covered amount.",
           "final_amount": 3700.0
         }
       },
@@ -449,32 +610,44 @@
         {
           "n": 1,
           "sender": "Coverage",
-          "time": "2026-06-19 04:36:11.710885+00:00",
+          "time": "2026-06-19 14:00:12.276305+00:00",
           "content": "@intake New claim submitted for review:\nPlease validate."
         },
         {
           "n": 2,
           "sender": "Intake",
-          "time": "2026-06-19 04:36:17.913617+00:00",
-          "content": "Intake Agent \u2014 Claim intake is valid with no missing fields or inconsistencies.\nHanding off to @coverage for the next step."
+          "time": "2026-06-19 14:00:21.392193+00:00",
+          "content": "Intake Agent \u2014 Claim intake is valid with no missing fields or inconsistencies found.\nHanding off to @coverage for the next step."
         },
         {
           "n": 3,
           "sender": "Coverage",
-          "time": "2026-06-19 04:36:20.166227+00:00",
-          "content": "Coverage Agent \u2014 Covered: $3,700 payable after $500 deductible.\nHanding off to @fraud for the next step."
+          "time": "2026-06-19 14:00:47.487689+00:00",
+          "content": "Coverage Agent \u2014 Policy is active, peril covered, and $500 deductible applies to a $3,700 covered amount.\nHanding off to @fraud for the next step."
         },
         {
           "n": 4,
           "sender": "Fraud",
-          "time": "2026-06-19 04:36:26.705612+00:00",
-          "content": "Fraud Agent \u2014 Claim appears fraudulent due to low photo count and prior claims.\nHanding off to @adjudicator for the next step."
+          "time": "2026-06-19 14:00:52.368947+00:00",
+          "content": "Fraud Agent \u2014 Claim appears suspicious due to low photo count and recent policy activation.\nHanding off to @adjudicator for the next step."
         },
         {
           "n": 5,
           "sender": "Adjudicator",
-          "time": "2026-06-19 04:36:30.985385+00:00",
-          "content": "@fraud @coverage @intake Adjudicator Agent \u2014 Claim escalated due to high risk score and red flags detected.\n@nivishnick2k (human) this claim is ESCALATED for human review."
+          "time": "2026-06-19 14:00:56.881706+00:00",
+          "content": "Adjudicator Agent \u2014 Ambiguous fraud risk (40/100); requesting a peer-discovery recheck.\n@fraud please double-check this claim before I decide."
+        },
+        {
+          "n": 6,
+          "sender": "Fraud",
+          "time": "2026-06-19 14:01:01.030988+00:00",
+          "content": "Fraud Agent \u2014 Claim appears suspicious due to low photo count and recent policy activation.\nHanding off to @adjudicator for the next step."
+        },
+        {
+          "n": 7,
+          "sender": "Adjudicator",
+          "time": "2026-06-19 14:01:06.262483+00:00",
+          "content": "@fraud @coverage @intake @nivishnick2k (human) Adjudicator Agent \u2014 Claim approved for $3,700, meeting all coverage criteria.\nFinal decision: APPROVE."
         }
       ]
     }

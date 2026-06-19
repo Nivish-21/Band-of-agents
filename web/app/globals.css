@@ -1,5 +1,4 @@
 @import "tailwindcss";
-
 /* ClaimBand — dark "control-room / signal" theme (palette from docs/cover.svg) */
 @theme {
   --color-bg: oklch(0.18 0.04 264);
@@ -18,9 +17,10 @@
   --color-escalate: oklch(0.84 0.15 85);
   --color-deny: oklch(0.72 0.18 25);
 
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-display: ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }

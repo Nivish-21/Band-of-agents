@@ -48,6 +48,11 @@ Transform = Callable[[ClaimRecord], ClaimRecord]
 Summary = Callable[[ClaimRecord], str]
 # NoteFn = optional async vendor LLM call producing a one-line reasoning note.
 NoteFn = Callable[[ClaimRecord], Awaitable[str]]
+# ReprocessFn = optional callback that allows one more pass for a populated block.
+ReprocessFn = Callable[[ClaimRecord, object], bool]
+# PreActionFn = optional async hook that can emit a discovery/recruitment event
+# before the current agent finishes its turn. Returning False stops the turn.
+PreActionFn = Callable[[ClaimRecord, object], Awaitable[bool]]
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
 
@@ -176,6 +181,8 @@ def make_relay_handler(
     block_attr: str,
     note_fn: Optional[NoteFn] = None,
     judge_fn: Optional[Callable[[ClaimRecord], Awaitable[ClaimRecord]]] = None,
+    reprocess_if: Optional[ReprocessFn] = None,
+    pre_action_fn: Optional[PreActionFn] = None,
 ):
     """Build a deterministic ``on_event`` handler for one relay agent.
 
@@ -197,12 +204,26 @@ def make_relay_handler(
             print(f"[{agent_name}] no claim record in context; skipping", flush=True)
             return
 
-        if getattr(record, block_attr) is not None:
+        if getattr(record, block_attr) is not None and not (
+            reprocess_if is not None and reprocess_if(record, inp)
+        ):
             print(
                 f"[{agent_name}] claim {record.claim_id} already has '{block_attr}'; skipping",
                 flush=True,
             )
             return
+
+        if pre_action_fn is not None:
+            try:
+                should_continue = await pre_action_fn(record, inp)
+            except Exception as exc:
+                print(
+                    f"[{agent_name}] pre-action failed ({exc}); continuing",
+                    flush=True,
+                )
+                should_continue = True
+            if not should_continue:
+                return
 
         print(f"[{agent_name}] processing claim {record.claim_id}", flush=True)
         try:

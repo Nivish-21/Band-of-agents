@@ -61,6 +61,7 @@ class FraudBlock(BaseModel):
     rule_risk: int = 0
     narrative_risk: int = 0
     narrative_rationale: str = ""
+    discovery_round: int = 0
 
 
 class DecisionBlock(BaseModel):

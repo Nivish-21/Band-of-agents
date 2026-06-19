@@ -38,6 +38,18 @@ def _load_fixture(name: str) -> str:
     return f"@{HANDLES['intake']} new claim:\n```json\n{json.dumps(data)}\n```"
 
 
+class DiscoveryTools(FakeAgentTools):
+    def __init__(self) -> None:
+        super().__init__()
+        self.lookup_calls = 0
+
+    async def lookup_peers(
+        self, page: int = 1, page_size: int = 50
+    ) -> dict[str, object]:
+        self.lookup_calls += 1
+        return await super().lookup_peers(page=page, page_size=page_size)
+
+
 async def _run_chain(seed_content: str) -> list[dict]:
     """Run all four hops; return the list of messages posted to the room."""
     posted: list[dict] = []
@@ -171,3 +183,92 @@ def test_judge_fn_failure_keeps_rule_result():
     assert final["fraud"]["rule_risk"] == 20
     assert final["fraud"]["narrative_risk"] == 0
     assert final["fraud"]["risk_score"] == 20
+
+
+def test_ambiguous_risk_triggers_peer_discovery_then_reruns_fraud():
+    async def run() -> dict:
+        with open("claims/clean.json", "r") as handle:
+            claim = json.load(handle)
+        claim["incident"]["police_report"] = False
+        claim["claimant"]["prior_claims_12mo"] = 1
+
+        content = (
+            f'@{HANDLES["intake"]} new claim:\n' f"```json\n{json.dumps(claim)}\n```"
+        )
+
+        intake_tools = FakeAgentTools()
+        intake_handler = make_relay_handler(
+            "intake",
+            "id-intake",
+            intake.transform,
+            intake.summary,
+            "intake",
+            note_fn=None,
+        )
+        await intake_handler(_make_inp(content, intake_tools))
+        content = intake_tools.messages_sent[0]["content"]
+
+        coverage_tools = FakeAgentTools()
+        coverage_handler = make_relay_handler(
+            "coverage",
+            "id-coverage",
+            coverage.transform,
+            coverage.summary,
+            "coverage",
+            note_fn=None,
+        )
+        await coverage_handler(_make_inp(content, coverage_tools))
+        content = coverage_tools.messages_sent[0]["content"]
+
+        fraud_tools_first = FakeAgentTools()
+        fraud_handler = make_relay_handler(
+            "fraud",
+            "id-fraud",
+            fraud.transform,
+            fraud.summary,
+            "fraud",
+            note_fn=None,
+            reprocess_if=fraud._should_rerun,
+        )
+        await fraud_handler(_make_inp(content, fraud_tools_first))
+        content = fraud_tools_first.messages_sent[0]["content"]
+
+        adjudicator_tools_first = DiscoveryTools()
+        adjudicator_handler = make_relay_handler(
+            "adjudicator",
+            "id-adjudicator",
+            adjudicator.transform,
+            adjudicator.summary,
+            "decision",
+            note_fn=None,
+            pre_action_fn=adjudicator._peer_discovery,
+        )
+        await adjudicator_handler(_make_inp(content, adjudicator_tools_first))
+
+        assert adjudicator_tools_first.lookup_calls == 1
+        assert len(adjudicator_tools_first.participants_added) == 1
+        assert len(adjudicator_tools_first.messages_sent) == 1
+        discovery_message = adjudicator_tools_first.messages_sent[0]["content"]
+        assert HANDLES["fraud"] in adjudicator_tools_first.messages_sent[0]["mentions"]
+
+        fraud_tools_second = FakeAgentTools()
+        await fraud_handler(_make_inp(discovery_message, fraud_tools_second))
+        assert len(fraud_tools_second.messages_sent) == 1
+        resumed = _record_from_message(fraud_tools_second.messages_sent[0]["content"])
+        assert resumed["fraud"]["discovery_round"] == 1
+
+        adjudicator_tools_second = DiscoveryTools()
+        await adjudicator_handler(
+            _make_inp(
+                fraud_tools_second.messages_sent[0]["content"], adjudicator_tools_second
+            )
+        )
+        assert adjudicator_tools_second.lookup_calls == 0
+        assert len(adjudicator_tools_second.messages_sent) == 1
+        return _record_from_message(
+            adjudicator_tools_second.messages_sent[0]["content"]
+        )
+
+    final = asyncio.run(run())
+    assert final["decision"]["status"] == "APPROVE"
+    assert final["fraud"]["discovery_round"] == 1
