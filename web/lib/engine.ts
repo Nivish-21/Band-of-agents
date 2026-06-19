@@ -59,21 +59,17 @@ export function computeCoverage(claim: ClaimRecord): NonNullable<CoverageBlock> 
   const reasons: string[] = [];
 
   const statusActive = claim.policy.status.toLowerCase() === "active";
+  const effective = claim.policy.effective_date;
+  const expiry = claim.policy.expiry_date;
+  const incDate = claim.incident.date;
+
   reasons.push(
     statusActive
-      ? "Policy status is active."
-      : `Policy status is '${claim.policy.status}' (expected 'active').`,
+      ? `The policy is active for the incident date (${incDate} falls between ${effective} and ${expiry}).`
+      : `The policy status is '${claim.policy.status}', not 'active'. The incident date (${incDate}) falls outside the policy period (${effective} to ${expiry}).`,
   );
 
-  const dateInRange =
-    claim.policy.effective_date <= claim.incident.date &&
-    claim.incident.date <= claim.policy.expiry_date;
-  reasons.push(
-    dateInRange
-      ? `Incident date ${claim.incident.date} is within the policy period (${claim.policy.effective_date} to ${claim.policy.expiry_date}).`
-      : `Incident date ${claim.incident.date} falls outside the policy period (${claim.policy.effective_date} to ${claim.policy.expiry_date}).`,
-  );
-
+  const dateInRange = effective <= incDate && incDate <= expiry;
   const policy_active = statusActive && dateInRange;
 
   const cov = claim.policy.coverage as unknown as Record<string, unknown>;
@@ -83,12 +79,12 @@ export function computeCoverage(claim: ClaimRecord): NonNullable<CoverageBlock> 
     peril_covered = Boolean(cov[perilType]);
     reasons.push(
       peril_covered
-        ? `Peril '${claim.incident.type}' is explicitly covered under the policy.`
-        : `Peril '${claim.incident.type}' is excluded (set to False) in policy coverage.`,
+        ? `The incident type is ${claim.incident.type}, which is covered by the policy.`
+        : `The incident type ${claim.incident.type} is excluded under the policy coverage.`,
     );
   } else {
     reasons.push(
-      `Peril '${claim.incident.type}' is not recognized or supported by the policy coverage schema.`,
+      `The incident type ${claim.incident.type} is not recognised under this policy.`,
     );
   }
 
@@ -103,24 +99,27 @@ export function computeCoverage(claim: ClaimRecord): NonNullable<CoverageBlock> 
     const baseCovered = estimate > limit ? limit : estimate;
     if (estimate > limit) {
       reasons.push(
-        `Damage estimate (${usd(estimate)}) exceeds liability limit (${usd(limit)}). Limit will apply.`,
+        `The damage estimate (${usd(estimate)}) exceeds the liability limit (${usd(limit)}). The limit will apply instead.`,
       );
     }
     if (baseCovered <= deductible) {
-      reasons.push(
-        `Covered amount before deductible (${usd(baseCovered)}) is less than or equal to the deductible (${usd(deductible)}). Net covered amount is $0.00.`,
-      );
       covered_amount = 0;
       deductible_applied = Math.trunc(baseCovered);
+      reasons.push(
+        `The covered amount before deductible (${usd(baseCovered)}) is at or below the deductible (${usd(deductible)}). No payout after applying the deductible.`,
+      );
     } else {
       covered_amount = baseCovered - deductible;
       deductible_applied = deductible;
       reasons.push(
-        `Deductible of ${usd(deductible)} applied. Covered amount: ${usd(covered_amount)} (min(Estimate, Limit) - Deductible).`,
+        `The coverage amount is calculated as min(estimate, limit) - deductible. min(${usd(estimate)} (estimate), ${usd(limit)} (limit)) = ${usd(baseCovered)}. Subtracting the deductible: ${usd(baseCovered)} - ${usd(deductible)} = ${usd(covered_amount)}.`,
       );
     }
   } else {
-    reasons.push("Claim coverage check failed; covered amount set to $0.00.");
+    const why = !policy_active
+      ? "the policy is not active for this incident date"
+      : "the peril is not covered";
+    reasons.push(`Coverage check failed because ${why}. Covered amount set to $0.00.`);
   }
 
   return { policy_active, peril_covered, deductible_applied, covered_amount, reasons };
@@ -131,42 +130,78 @@ export function scoreRisk(claim: ClaimRecord): NonNullable<FraudBlock> {
   const red_flags: string[] = [];
   const reasons: string[] = [];
 
-  if (!claim.incident.police_report) {
-    red_flags.push("No police report filed for the incident.");
-  }
-  if (claim.claimant.prior_claims_12mo > 0) {
-    red_flags.push(
-      `Claimant has ${claim.claimant.prior_claims_12mo} prior claim(s) in the last 12 months.`,
+  const pr = claim.incident.police_report;
+  reasons.push(pr ? "Police report was filed." : "No police report — that's a concern.");
+  if (!pr) red_flags.push("No police report filed for the incident.");
+
+  const prior = claim.claimant.prior_claims_12mo;
+  if (prior > 0) {
+    reasons.push(
+      `Claimant has ${prior} prior claim${prior > 1 ? "s" : ""} in the last 12 months — elevated risk.`,
     );
-  }
-  if (claim.damage.photos_count < MIN_PHOTOS) {
     red_flags.push(
-      `Low photo count (${claim.damage.photos_count} photos provided, minimum of ${MIN_PHOTOS} expected).`,
+      `Claimant has ${prior} prior claim(s) in the last 12 months.`,
     );
+  } else {
+    reasons.push("Claimant has no prior claims in the last 12 months.");
   }
-  if (!claim.claimant.is_policy_holder) {
+
+  const photos = claim.damage.photos_count;
+  if (photos < MIN_PHOTOS) {
+    reasons.push(
+      `Low photo count (${photos} provided, minimum ${MIN_PHOTOS} expected) — insufficient documentation.`,
+    );
+    red_flags.push(
+      `Low photo count (${photos} photos provided, minimum of ${MIN_PHOTOS} expected).`,
+    );
+  } else {
+    reasons.push(`Sufficient photos provided (${photos}).`);
+  }
+
+  const holder = claim.claimant.is_policy_holder;
+  reasons.push(
+    holder
+      ? "Claimant is the policy holder."
+      : "Claimant is not the primary policy holder.",
+  );
+  if (!holder) {
     red_flags.push(
       `Claimant '${claim.claimant.name}' is not the primary policy holder.`,
     );
   }
-  if (claim.amount_claimed > HIGH_AMOUNT) {
-    red_flags.push(
-      `High claim amount requested (${usd(claim.amount_claimed)} exceeds threshold of ${usd(HIGH_AMOUNT)}).`,
+
+  const amt = claim.amount_claimed;
+  if (amt > HIGH_AMOUNT) {
+    reasons.push(
+      `Claim amount (${usd(amt)}) exceeds the high-risk threshold of ${usd(HIGH_AMOUNT)}.`,
     );
+    red_flags.push(
+      `High claim amount requested (${usd(amt)} exceeds threshold of ${usd(HIGH_AMOUNT)}).`,
+    );
+  } else {
+    reasons.push(`Claim amount (${usd(amt)}) is below the high-risk threshold.`);
   }
+
   const daysSinceStart = daysBetween(
     claim.policy.effective_date,
     claim.incident.date,
   );
   if (daysSinceStart >= 0 && daysSinceStart <= 30) {
+    reasons.push(
+      `Incident occurred only ${daysSinceStart} day${daysSinceStart > 1 ? "s" : ""} after policy activation (within 30-day window) — possible early claim.`,
+    );
     red_flags.push(
       `Incident occurred ${daysSinceStart} day(s) after policy activation (within 30-day window).`,
+    );
+  } else if (daysSinceStart >= 0) {
+    reasons.push(
+      `Incident occurred ${daysSinceStart} day${daysSinceStart > 1 ? "s" : ""} after policy effective date — outside the early-claim window.`,
     );
   }
 
   const risk_score = Math.min(100, red_flags.length * 20);
   reasons.push(
-    `Calculated risk score: ${risk_score} based on ${red_flags.length} triggered red flag(s).`,
+    `Calculated risk score: ${risk_score} based on ${red_flags.length} triggered red flag${red_flags.length > 1 ? "s" : ""}.`,
   );
 
   return { risk_score, red_flags, reasons };
@@ -179,53 +214,54 @@ export function adjudicate(record: ClaimRecord): NonNullable<DecisionBlock> {
   const fraud = record.fraud;
 
   if (!intake) {
-    return { status: "DENY", reason: "Intake block missing from claim record.", final_amount: 0 };
+    return { status: "DENY", reason: "Intake block is missing from the claim record — cannot proceed without validation.", final_amount: 0 };
   }
   if (!intake.is_valid) {
     return {
       status: "DENY",
-      reason: `Claim failed intake validation. Inconsistencies: ${intake.inconsistencies.join(", ")}`,
+      reason: `Intake validation failed. Inconsistencies found: ${intake.inconsistencies.join("; ")}. The claim cannot move forward.`,
       final_amount: 0,
     };
   }
   if (!coverage) {
-    return { status: "DENY", reason: "Coverage block missing from claim record.", final_amount: 0 };
+    return { status: "DENY", reason: "Coverage evaluation is missing — no coverage data to base a decision on.", final_amount: 0 };
   }
   if (!fraud) {
-    return { status: "DENY", reason: "Fraud/Risk evaluation block missing from claim record.", final_amount: 0 };
+    return { status: "DENY", reason: "Fraud risk evaluation is missing — cannot assess claim without it.", final_amount: 0 };
   }
   if (!coverage.policy_active) {
     return {
       status: "DENY",
-      reason: `Policy is inactive at incident date. Reasons: ${coverage.reasons.join("; ")}`,
+      reason: `The policy is not active on the incident date. ${coverage.reasons[0]} Per hard rules, this claim must be denied.`,
       final_amount: 0,
     };
   }
   if (!coverage.peril_covered) {
     return {
       status: "DENY",
-      reason: `Peril is not covered under the policy. Reasons: ${coverage.reasons.join("; ")}`,
+      reason: `The claimed peril is not covered. ${coverage.reasons[1]} The policy does not cover this type of incident.`,
       final_amount: 0,
     };
   }
   if (fraud.risk_score >= ESCALATE_RISK) {
     return {
       status: "ESCALATE",
-      reason: `High risk score detected (${fraud.risk_score} >= ${ESCALATE_RISK}). Red flags: ${fraud.red_flags.join("; ")}`,
+      reason: `Risk score ${fraud.risk_score} exceeds the ${ESCALATE_RISK} threshold. Red flags: ${fraud.red_flags.join("; ")}. Per hard rules, this claim must be escalated for human review.`,
       final_amount: coverage.covered_amount,
     };
   }
   if (coverage.covered_amount > ESCALATE_AMOUNT) {
     return {
       status: "ESCALATE",
-      reason: `High covered amount detected (${usd(coverage.covered_amount)} > ${usd(ESCALATE_AMOUNT)}). Requires human approval.`,
+      reason: `The covered amount (${usd(coverage.covered_amount)}) exceeds the escalation threshold (${usd(ESCALATE_AMOUNT)}). A human reviewer must approve this payout.`,
       final_amount: coverage.covered_amount,
     };
   }
+  const finalAmount = coverage.covered_amount;
   return {
     status: "APPROVE",
-    reason: "Claim approved automatically based on policy coverage and low risk score.",
-    final_amount: coverage.covered_amount,
+    reason: `The policy is active on the incident date, the fraud risk score is low (${fraud.risk_score}) and the covered amount (${usd(finalAmount)}) is well below the escalation threshold. All hard rules point to approval, so the claim is approved for the covered amount.`,
+    final_amount: finalAmount,
   };
 }
 
