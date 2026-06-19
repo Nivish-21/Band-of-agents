@@ -15,16 +15,16 @@ function Connector() {
   return (
     <div
       aria-hidden
-      className="flex shrink-0 items-center justify-center py-0.5 md:px-1 md:py-0"
+      className="flex shrink-0 items-center justify-center py-0.5"
     >
       <div className="relative flex items-center justify-center">
-        <span className="block h-6 w-px bg-gradient-to-b from-transparent via-accent/50 to-transparent md:h-px md:w-8 md:bg-gradient-to-r" />
+        <span className="block h-6 w-px bg-gradient-to-b from-transparent via-accent/50 to-transparent" />
         <motion.span
-          className="absolute rotate-90 font-display text-lg leading-none text-accent md:rotate-0"
+          className="absolute font-display text-lg leading-none text-accent"
           animate={{ opacity: [0.45, 1, 0.45] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
         >
-          ›
+          ∷
         </motion.span>
       </div>
     </div>
@@ -43,7 +43,7 @@ export default function Relay({ record, runKey }: RelayProps) {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="flex flex-col items-stretch gap-3 md:flex-row md:gap-1"
+      className="flex flex-col items-stretch gap-3"
     >
       {agents.map((agent, i) => (
         <Fragment key={agent.key}>

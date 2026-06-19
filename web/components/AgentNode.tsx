@@ -66,21 +66,16 @@ function Findings({ agent, record }: { agent: Agent; record: ClaimRecord }) {
         </li>
         {b.reasons.length > 0 && (
           <li className="border-t border-line/70 pt-2">
-            <details className="group">
-              <summary className="mono cursor-pointer text-[11px] text-ink-faint transition-colors hover:text-ink">
-                LLM reasoning ({b.reasons.length} steps)
-              </summary>
-              <ul className="mt-1.5 space-y-1">
-                {b.reasons.map((r, i) => (
-                  <li
-                    key={i}
-                    className="text-[12px] leading-snug text-ink-muted"
-                  >
-                    {r}
-                  </li>
-                ))}
-              </ul>
-            </details>
+            <p className="mono mb-1.5 text-[11px] font-medium uppercase tracking-wider text-ink-faint">
+              Reasoning
+            </p>
+            <ul className="space-y-1.5">
+              {b.reasons.map((r, i) => (
+                <li key={i} className="leading-relaxed text-ink-muted">
+                  {i + 1}. {r}
+                </li>
+              ))}
+            </ul>
           </li>
         )}
       </ul>
@@ -126,21 +121,18 @@ function Findings({ agent, record }: { agent: Agent; record: ClaimRecord }) {
           </p>
         )}
         {b.reasons.length > 0 && (
-          <details className="group mt-2 border-t border-line/70 pt-2">
-            <summary className="mono cursor-pointer text-[11px] text-ink-faint transition-colors hover:text-ink">
-              Analysis ({b.reasons.length} points)
-            </summary>
-            <ul className="mt-1.5 space-y-1">
+          <div className="mt-2 border-t border-line/70 pt-2">
+            <p className="mono mb-1.5 text-[11px] font-medium uppercase tracking-wider text-ink-faint">
+              Analysis
+            </p>
+            <ul className="space-y-1.5">
               {b.reasons.map((r, i) => (
-                <li
-                  key={i}
-                  className="text-[12px] leading-snug text-ink-muted"
-                >
-                  {r}
+                <li key={i} className="leading-relaxed text-ink-muted">
+                  {i + 1}. {r}
                 </li>
               ))}
             </ul>
-          </details>
+          </div>
         )}
       </div>
     );
@@ -152,7 +144,7 @@ function Findings({ agent, record }: { agent: Agent; record: ClaimRecord }) {
         <span className="mono text-[11px] text-ink-faint">verdict →</span>
         <p className="font-display text-base font-bold text-ink">{b.status}</p>
         {b.reason && (
-          <p className="border-t border-line/70 pt-1.5 text-[12px] italic leading-snug text-ink-muted">
+          <p className="border-t border-line/70 pt-2 leading-relaxed text-ink-muted">
             {b.reason}
           </p>
         )}
@@ -169,7 +161,7 @@ export default function AgentNode({ agent, record, index }: AgentNodeProps) {
       className="group relative flex-1 rounded-xl border border-line bg-surface/70 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-accent/60"
       style={{ boxShadow: "0 1px 0 0 oklch(1 0 0 / 0.04) inset" }}
     >
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <span className="mono text-[11px] text-ink-faint">
           0{index + 1}
         </span>
@@ -187,10 +179,12 @@ export default function AgentNode({ agent, record, index }: AgentNodeProps) {
         />
       </div>
       <h3 className="font-display text-lg font-bold text-ink">{agent.name}</h3>
-      <p className="mono mt-1 mb-3 text-[11px] text-accent">
+      <p className="mono mb-3 text-[11px] text-accent">
         {agent.framework} · {agent.vendor}
       </p>
-      <Findings agent={agent} record={record} />
+      <div className="max-h-72 space-y-1.5 overflow-y-auto pr-1 text-sm">
+        <Findings agent={agent} record={record} />
+      </div>
     </motion.li>
   );
 }
