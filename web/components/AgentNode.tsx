@@ -64,6 +64,25 @@ function Findings({ agent, record }: { agent: Agent; record: ClaimRecord }) {
             ${b.covered_amount.toLocaleString()}
           </span>
         </li>
+        {b.reasons.length > 0 && (
+          <li className="border-t border-line/70 pt-2">
+            <details className="group">
+              <summary className="mono cursor-pointer text-[11px] text-ink-faint transition-colors hover:text-ink">
+                LLM reasoning ({b.reasons.length} steps)
+              </summary>
+              <ul className="mt-1.5 space-y-1">
+                {b.reasons.map((r, i) => (
+                  <li
+                    key={i}
+                    className="text-[12px] leading-snug text-ink-muted"
+                  >
+                    {r}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </li>
+        )}
       </ul>
     );
   }
@@ -106,6 +125,23 @@ function Findings({ agent, record }: { agent: Agent; record: ClaimRecord }) {
             “{b.narrative_rationale}”
           </p>
         )}
+        {b.reasons.length > 0 && (
+          <details className="group mt-2 border-t border-line/70 pt-2">
+            <summary className="mono cursor-pointer text-[11px] text-ink-faint transition-colors hover:text-ink">
+              Analysis ({b.reasons.length} points)
+            </summary>
+            <ul className="mt-1.5 space-y-1">
+              {b.reasons.map((r, i) => (
+                <li
+                  key={i}
+                  className="text-[12px] leading-snug text-ink-muted"
+                >
+                  {r}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
     );
   }
@@ -115,6 +151,11 @@ function Findings({ agent, record }: { agent: Agent; record: ClaimRecord }) {
       <div className="space-y-1.5">
         <span className="mono text-[11px] text-ink-faint">verdict →</span>
         <p className="font-display text-base font-bold text-ink">{b.status}</p>
+        {b.reason && (
+          <p className="border-t border-line/70 pt-1.5 text-[12px] italic leading-snug text-ink-muted">
+            {b.reason}
+          </p>
+        )}
       </div>
     );
   }

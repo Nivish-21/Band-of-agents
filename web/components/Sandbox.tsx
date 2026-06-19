@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { data, scenarioOrder } from "../lib/data";
 import type { ClaimRecord } from "../lib/data";
 import { runRelay } from "../lib/engine";
@@ -152,12 +152,26 @@ export default function Sandbox() {
   const [form, setForm] = useState<Form>(() =>
     fromClaim(data.scenarios[scenarioOrder[0]].claim),
   );
+  const [result, setResult] = useState<ClaimRecord | null>(null);
+  const [thinking, setThinking] = useState(false);
   const [runId, setRunId] = useState(0);
   const set = <K extends keyof Form>(key: K, value: Form[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  const result = useMemo(() => runRelay(toClaim(form)), [form, runId]);
-  const decision = result.decision;
+  const handleAdjudicate = async (e: FormEvent) => {
+    e.preventDefault();
+    setThinking(true);
+    await new Promise((r) => setTimeout(r, 2000));
+    const r = runRelay(toClaim(form));
+    setResult(r);
+    setRunId((n) => n + 1);
+    setThinking(false);
+  };
+
+  const handlePreset = (k: string) => {
+    setForm(fromClaim(data.scenarios[k].claim));
+    setResult(null);
+  };
 
   return (
     <section
@@ -191,10 +205,7 @@ export default function Sandbox() {
           <button
             key={k}
             type="button"
-            onClick={() => {
-              setForm(fromClaim(data.scenarios[k].claim));
-              setRunId((n) => n + 1);
-            }}
+            onClick={() => handlePreset(k)}
             className="rounded-lg border border-line bg-surface/60 px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-accent/50 hover:text-ink"
           >
             {data.scenarios[k].label}
@@ -205,10 +216,7 @@ export default function Sandbox() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         {/* Form */}
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setRunId((n) => n + 1);
-          }}
+          onSubmit={handleAdjudicate}
           className="rounded-2xl border border-line bg-surface/40 p-5 sm:p-6"
         >
           <fieldset className="mb-6">
@@ -362,22 +370,35 @@ export default function Sandbox() {
 
           <button
             type="submit"
-            className="mt-6 w-full rounded-lg bg-accent px-4 py-3 font-display text-sm font-bold text-bg transition-transform hover:scale-[1.01] active:scale-100"
+            disabled={thinking}
+            className="mt-6 w-full rounded-lg bg-accent px-4 py-3 font-display text-sm font-bold text-bg transition-transform hover:scale-[1.01] active:scale-100 disabled:cursor-wait disabled:opacity-60"
           >
-            Adjudicate claim →
+            {thinking ? "Thinking…" : "Adjudicate claim →"}
           </button>
         </form>
 
         {/* Result */}
         <div className="space-y-6">
-          <Relay record={result} runKey={runId} />
-          {decision && (
-            <Verdict
-              outcome={decision.status}
-              reason={decision.reason}
-              finalAmount={decision.final_amount}
-              claimId="CLM-YOURS"
-            />
+          {thinking && (
+            <div className="flex items-center gap-3 rounded-xl border border-line bg-surface/40 px-5 py-4">
+              <span className="inline-block size-3 animate-spin rounded-full border-2 border-accent border-r-transparent" />
+              <span className="mono text-sm text-ink-muted">
+                Agents are adjudicating…
+              </span>
+            </div>
+          )}
+          {result && !thinking && (
+            <>
+              <Relay record={result} runKey={runId} />
+              {result.decision && (
+                <Verdict
+                  outcome={result.decision.status}
+                  reason={result.decision.reason}
+                  finalAmount={result.decision.final_amount}
+                  claimId="CLM-YOURS"
+                />
+              )}
+            </>
           )}
         </div>
       </div>

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-06-19 — Web: LLM reasoning visible, sandbox gated on button click with 2s delay (Claude)
+
+- `AgentNode.tsx` — added expandable `reasons` display to Coverage and Fraud blocks, and `reason` text to Decision block. All LLM reasoning from scenarios.json now visible inline in the relay cards.
+- `Sandbox.tsx` — replaced `useMemo` auto-run with button-gated `handleAdjudicate()` that waits 2s before showing result. Preset buttons only populate form without triggering. Spinner shown during thinking state. Button text changes to "Thinking…" while disabled.
+
 ## 2026-06-19 — LLM judges for Coverage + Adjudicator: agents now genuinely decide (Claude)
 
 **Architecture change:** The deterministic `transform` functions are now *guardrails*, not decision-makers. Every agent's `judge_fn` calls a real LLM to reason about the claim, and hard-rule validation catches violations.
