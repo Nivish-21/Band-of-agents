@@ -166,3 +166,19 @@ hit the free-tier 20/day cap → template fallback (relay unaffected — proves 
 **Operational debt to clean up:** three throwaway rooms were created during bring-up
 (`38dc6e6c…`, `2e7e1b59…`, `34cd5ad4…`); current `BAND_ROOM_ID` is `34cd5ad4…`. `clear_room.py` is buggy
 (mishandles the list response). Pick ONE demo room and delete the orphans (or leave them — harmless).
+
+## D15 — Hybrid: deterministic guardrails + real LLM narrative judgment (2026-06-19)
+**Decision:** Reintroduce the LLM to the decision path, but only as a *bounded judgment on top of*
+deterministic guardrails — not as the data carrier. The Fraud agent calls Groq (`groq_narrative_risk`)
+to read the free-text incident narrative and return `narrative_risk` (0–40) + a one-line rationale,
+folded into `risk_score = min(100, rule_risk + narrative_risk)`.
+**Why:** D13 took the LLM off the path for reliability, but the side effect was that the agents made
+no real decisions — the pure functions decided everything, and the JS showcase made that glaring. For a
+hackathon judged on genuine agent decision-making, that was the core weakness. D15 lets the model decide
+what rules can't (narrative/contextual fraud the field checks miss) while keeping the data flow
+deterministic and adding a rules-only fallback — so reliability (the D13 concern) is preserved.
+**Alternatives rejected (time/infra):** live serverless LLM in Vercel (needs keys + 429 handling under
+deadline); live-through-Band on judge inputs (needs an always-on agent host the user doesn't have).
+Chosen path = capture real Groq reasoning + replay, which needs no backend and can't fail at judging.
+**Guardrail discipline:** the LLM never overrides hard rules (can't approve an expired policy); it only
+adds risk/nuance within the deterministic floor. Vendor = Groq (reliable, not the Gemini free-tier cap).

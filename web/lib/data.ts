@@ -27,6 +27,9 @@ export type FraudBlock = {
   risk_score: number;
   red_flags: string[];
   reasons: string[];
+  rule_risk?: number;
+  narrative_risk?: number;
+  narrative_rationale?: string;
 } | null;
 
 export type DecisionBlock = {

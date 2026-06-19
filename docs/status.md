@@ -5,6 +5,7 @@
 - Codex slice implemented: `claimband/schema.py`, `claimband/coverage.py`, `claimband/scoring.py`, `claimband/adjudication.py`.
 - Gemini slice implemented: `claimband/agents/` scripts, `claimband/prompts/` instructions, and `seed.py`.
 - **(HOTFIX)** Fixed F1-F5 defects: Switched prompts to use `send_message` with mentions, updated tools to parse and merge full records, wired missing tools, and rewrote `seed.py` to use SDK REST API.
+- **(D15 LOCAL HARDENING)** Added `conftest.py` so `pytest` works from the repo root, plus regression tests for `groq_narrative_risk` parsing and relay `judge_fn` fallback. Current local gate: **43 tests pass**, `black` clean.
 - Automated test coverage built: 18 passing tests under `tests/` (`test_schema.py`, `test_coverage.py`, `test_scoring.py`, `test_integration.py`).
 - 3 JSON fixtures added: `claims/clean.json`, `claims/deny.json`, `claims/fraud.json`.
 - `README.md` added with architecture diagrams and run instructions.
@@ -168,3 +169,21 @@ exit 0. `demo.py` writes to `docs/evidence/dr3-<fixture>.txt` by design; the smo
 `dr3-clean.txt` so the committed capture (md5 `9de9afa6…`) was restored to keep the criteria table accurate.
 Plan steps D1–D6 complete. NOTE: this run created one more room (`2fc75cc5…`) — add it to the orphan-cleanup
 list under BLOCKED item 1; still not deleting anything.
+
+## D15 IN PROGRESS — agents now genuinely decide (LLM narrative judgment) — HANDED TO CODEX (2026-06-19)
+User flagged that the flow ran on deterministic logic alone (agents were thin wrappers; the JS sandbox
+reproduced verdicts with no agents). Fix D15: Fraud agent now calls a REAL Groq model to judge the
+free-text narrative and add risk the rules can't see, folded into the score (rules = floor, with fallback).
+- Backend done + green (43 tests, black clean): `schema.py`, `scoring.py`, `notes.py::groq_narrative_risk`,
+  `relay.py` (`judge_fn` hook), `agents/fraud.py` (`judge()`).
+- LOCAL VERIFY: added `tests/test_notes.py`, extended `tests/test_relay.py`, and added root `conftest.py`
+  so `./.venv/bin/pytest -q` works from the repo root without exporting `PYTHONPATH=.`.
+- Real reasoning captured into `web/data/scenarios.json` via `scripts/capture_reasoning.py`:
+  clean +0, deny +30 ("incident after policy expiration is suspicious"), fraud +30 ("excessive damage
+  estimate for minor scrape"). Frontend surfaces it (Fraud node: rule+model split + rationale quote);
+  sandbox reframed as the deterministic guardrails.
+- **ALL D15 changes are UNCOMMITTED** on `main` (11 files + `scripts/capture_reasoning.py`).
+- **Live Vercel site is still the PRE-D15 build** — not yet redeployed with the reasoning.
+- Handoff: see `docs/plan.md` "TASK BLOCK — D15 … HANDOFF TO CODEX" (steps C1–C6). Caveat: narrative
+  reasoning was injected via the capture script (real Groq), not a fresh Band relay; trails not yet
+  re-captured; verdicts unchanged. CLAUDE's role from here = verify Codex's work.

@@ -65,9 +65,11 @@ export default function Showcase() {
           Watch a claim move through the band
         </h2>
         <p className="mt-4 text-ink-muted">
-          Pick a claim. Each agent reads the shared record from the Band room, runs
-          its tested logic, and hands off to the next — exactly as captured in a live
-          run.
+          Pick a claim. Each agent reads the shared record from the Band room, runs its
+          logic, and hands off to the next. Where rules fall short, its model reasons
+          over the claim — watch the{" "}
+          <span className="text-ink">Fraud agent read the incident story</span> and add
+          risk the rules can&apos;t see. Captured from a live run.
         </p>
       </header>
 

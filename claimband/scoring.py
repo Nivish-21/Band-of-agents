@@ -69,4 +69,9 @@ def score_risk(claim: ClaimRecord) -> FraudBlock:
         f"Calculated risk score: {risk_score} based on {len(red_flags)} triggered red flag(s)."
     )
 
-    return FraudBlock(risk_score=risk_score, red_flags=red_flags, reasons=reasons)
+    return FraudBlock(
+        risk_score=risk_score,
+        rule_risk=risk_score,
+        red_flags=red_flags,
+        reasons=reasons,
+    )

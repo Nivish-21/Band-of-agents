@@ -134,7 +134,10 @@
             "Claim amount ($4,200.00) is below the high-risk threshold.",
             "Incident occurred 160 day(s) after policy effective date.",
             "Calculated risk score: 0 based on 0 triggered red flag(s)."
-          ]
+          ],
+          "rule_risk": 0,
+          "narrative_risk": 0,
+          "narrative_rationale": "Consistent rear-end collision damage and claim amount."
         },
         "decision": {
           "status": "APPROVE",
@@ -279,7 +282,10 @@
             "Claim amount ($4,200.00) is below the high-risk threshold.",
             "Incident occurred 525 day(s) after policy effective date.",
             "Calculated risk score: 0 based on 0 triggered red flag(s)."
-          ]
+          ],
+          "rule_risk": 0,
+          "narrative_risk": 30,
+          "narrative_rationale": "Claimed incident after policy expiration is suspicious."
         },
         "decision": {
           "status": "DENY",
@@ -428,7 +434,10 @@
             "Claim amount ($4,200.00) is below the high-risk threshold.",
             "Incident occurred 160 day(s) after policy effective date.",
             "Calculated risk score: 60 based on 3 triggered red flag(s)."
-          ]
+          ],
+          "rule_risk": 60,
+          "narrative_risk": 30,
+          "narrative_rationale": "Excessive damage estimate for minor scrape incident."
         },
         "decision": {
           "status": "ESCALATE",

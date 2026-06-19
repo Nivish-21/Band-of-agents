@@ -393,3 +393,67 @@ mitigated by `finally` teardown + the existing `serve()` reconnect being irrelev
 - [x] D4 — `tests/test_demo.py` (15 unit tests on pure helpers); `black` clean; full suite 38 green.
 - [x] D5 — Live smoke: `demo.py clean.json` → room `2fc75cc5…` → APPROVE [OK], agents torn down, exit 0.
 - [x] D6 — README (one-command demo), `docs/status.md`, `docs/changelog.md` updated. Commit done; push only if asked.
+
+---
+
+## TASK BLOCK — D15: agents that genuinely DECIDE (LLM narrative judgment) — HANDOFF TO CODEX (2026-06-19)
+
+### Why
+User reviewed the live site and flagged the real weakness: the whole flow ran on deterministic logic
+alone — the "agents" were thin wrappers around pure functions, the JS sandbox reproduced the verdict
+with zero agents. For a hackathon judged on real agent collaboration/decisions, that's a liability.
+Fix (D15): give the agents a **real LLM judgment that the rules can't make** and make it visible.
+
+### What CLAUDE already did (UNCOMMITTED in the working tree — do not lose it)
+Backend (the real system now genuinely does this):
+- `claimband/schema.py` — `FraudBlock` gained `rule_risk`, `narrative_risk`, `narrative_rationale`.
+- `claimband/scoring.py` — sets `rule_risk` (deterministic floor).
+- `claimband/notes.py` — added `groq_narrative_risk(claim_summary) -> (risk 0-40, rationale)`: a REAL
+  Groq call (llama-3.3-70b, reliable / not Gemini-capped) judging narrative fraud signals rules miss.
+- `claimband/relay.py` — `make_relay_handler` gained an optional async `judge_fn` hook (runs after the
+  deterministic transform, falls back to the rule result on any failure).
+- `claimband/agents/fraud.py` — `judge()` calls `groq_narrative_risk`, folds it into the fraud block
+  (`risk_score = min(100, rule_risk + narrative_risk)`), wired via `make_relay_handler(..., judge)`.
+- Verified: 43 tests pass, `black` clean.
+
+Data + frontend:
+- `scripts/capture_reasoning.py` — runs the REAL `groq_narrative_risk` per fixture and injects
+  `rule_risk` / `narrative_risk` / `narrative_rationale` into `web/data/scenarios.json`. ALREADY RUN;
+  real output captured: clean +0 ("Consistent rear-end collision damage and claim amount."),
+  deny +30 ("Claimed incident after policy expiration is suspicious."),
+  fraud +30 ("Excessive damage estimate for minor scrape incident.").
+- `web/components/AgentNode.tsx` — Fraud node shows combined risk + "N rules + M model" + the model's
+  rationale quote.
+- `web/components/Sandbox.tsx` — reframed honestly as the **deterministic guardrails** layer.
+- `web/components/Showcase.tsx`, `web/app/page.tsx`, `web/lib/data.ts` — copy + types updated.
+- Frontend `next build` compiles clean.
+
+### IMPORTANT honesty notes (read before "verifying done")
+- The narrative reasoning in `scenarios.json` was injected by `capture_reasoning.py` (real Groq output),
+  NOT from a fresh live Band relay. The `docs/evidence/dr3-*.txt` trails are the EARLIER runs and do NOT
+  yet mention the narrative judgment. The captured **verdicts are unchanged** (rule-based); narrative
+  risk is shown additively in the UI. In the LIVE code, `judge()` folds narrative into `risk_score`
+  (material), so live vs captured-display diverge slightly. State this; don't over-claim.
+
+### What CODEX must do
+- [ ] C1 — Verify the reasoning UI in-browser (dev server start was interrupted before visual check):
+      Fraud node shows combined risk + rule/model split + rationale quote; Sandbox reads as "guardrails".
+      Screenshot desktop + mobile.
+- [ ] C2 — (Recommended for consistency) Re-run the LIVE Band relay for the 3 fixtures with the upgraded
+      Fraud agent (`create_new_room.py` → `run_all.py` → `seed.py`, or `demo.py --all`), so the captured
+      `dr3-*.txt` trails actually contain the narrative judgment. Then regenerate `scenarios.json`
+      (`build_web_data.py` then `capture_reasoning.py`). Groq is reliable; a Gemini 429 on coverage is fine.
+- [x] C3 — TDD gap: added tests for `groq_narrative_risk` parsing (RISK=NN | reason, clamp 0-40,
+      fallback on bad output) and the relay `judge_fn` fallback path. Keep the suite green + black
+      clean.
+- [ ] C4 — Redeploy to Vercel (`cd web && vercel --prod`) — the LIVE site is still the PRE-D15 build
+      without the model reasoning. Confirm the deployed URL shows the rationale and is public (200).
+- [ ] C5 — Commit + push everything (working tree has 11 modified files + `scripts/capture_reasoning.py`,
+      all uncommitted on `main`). Update `docs/status.md` + `docs/changelog.md` with what actually shipped.
+- [ ] (stretch) C6 — Real Band peer-discovery/recruitment event on ambiguous risk (criterion 5, still a gap).
+
+### Acceptance (what CLAUDE will cold-verify)
+- The deployed site shows a genuine model rationale per the captured runs (esp. Fraud reading the story).
+- `groq_narrative_risk` is real (not mocked) and wired into the live Fraud agent via `judge_fn`.
+- Tests green + black clean; if C2 done, `dr3-*.txt` trails + `scenarios.json` are consistent and md5-distinct.
+- Honesty bar: no claim that judges run live agents (no backend); the model reasoning is captured/real.

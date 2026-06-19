@@ -53,9 +53,14 @@ class CoverageBlock(BaseModel):
 
 
 class FraudBlock(BaseModel):
-    risk_score: int
+    risk_score: int  # combined: rule_risk + narrative_risk (capped 100)
     red_flags: List[str] = Field(default_factory=list)
     reasons: List[str] = Field(default_factory=list)
+    # Deterministic rule floor vs. the LLM's narrative judgment (D15: the model
+    # reads the free-text incident description and adds risk rules can't see).
+    rule_risk: int = 0
+    narrative_risk: int = 0
+    narrative_rationale: str = ""
 
 
 class DecisionBlock(BaseModel):

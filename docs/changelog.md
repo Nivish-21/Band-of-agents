@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-06-19 — D15 local verification hardening (Codex)
+- Added `conftest.py` so `./.venv/bin/pytest -q` works from the repo root without manually exporting
+  `PYTHONPATH=.`.
+- Added regression coverage in `tests/test_notes.py` for `groq_narrative_risk` parsing/clamping and in
+  `tests/test_relay.py` for the `judge_fn` fallback path when the Groq narrative call fails.
+- Verified locally: **43 tests pass**, `black --check` clean.
+- Honesty: browser/live Band recapture and Vercel redeploy were not run in this workspace.
+
+## 2026-06-19 — D15: agents that genuinely decide (LLM narrative judgment) — WIP, handed to Codex
+- Backend (real system now does this): FraudBlock gains rule_risk/narrative_risk/narrative_rationale
+  (`schema.py`); `scoring.py` sets rule_risk; `notes.py` adds `groq_narrative_risk` (real Groq judgment
+  of the free-text narrative, 0-40 + rationale, fallback to 0); `relay.py` gains an async `judge_fn` hook
+  (post-transform, rule-only fallback); `agents/fraud.py` `judge()` folds it into risk_score.
+- `scripts/capture_reasoning.py` injects the REAL Groq judgment per fixture into `web/data/scenarios.json`
+  (clean +0, deny +30, fraud +30 "excessive damage estimate for minor scrape"). Frontend surfaces it
+  (Fraud node rule+model split + rationale quote); sandbox reframed as the deterministic guardrails layer;
+  `page.tsx` pillar + copy updated.
+- 43 tests pass; black clean; frontend `next build` clean.
+- NOT DONE (Codex, see plan.md C1-C6): in-browser verify, optional live Band re-run + trail re-capture,
+  tests for the new judgment, REDEPLOY to Vercel (live site is still pre-D15), commit + push (all D15
+  changes uncommitted). Honesty: narrative reasoning injected via capture script (real Groq), not a fresh
+  Band relay; captured verdicts unchanged.
+
 ## 2026-06-19 — Interactive sandbox + human-readable trail (Claude, via impeccable)
 Addresses two judge-facing gaps: judges couldn't test their own inputs, and the trail showed raw JSON.
 - **"Adjudicate your own claim" sandbox** (`web/components/Sandbox.tsx`): an editable claim form +
@@ -119,4 +142,3 @@ Addresses two judge-facing gaps: judges couldn't test their own inputs, and the 
 - **README polish (`README.md`):** corrected Adjudicator vendor Gemini→Groq (code uses `groq_note`, D12); fixed demo run order (create room BEFORE starting agents, since agents read `BAND_ROOM_ID` on connect); added an honest "Gemini free tier 20/day cap" note explaining the 429-resilient relay.
 - **Formatting:** ran `black` on `run_all.py` and `check_participants.py` (were unformatted). Verified: `claimband` imports, **23 tests pass**, `black --check` clean on 27 files.
 - **Not changed:** no source/logic changes to agents, relay, or scoring — this run was verification + assets only.
-

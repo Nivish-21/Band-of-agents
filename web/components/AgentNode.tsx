@@ -69,27 +69,43 @@ function Findings({ agent, record }: { agent: Agent; record: ClaimRecord }) {
   }
   if (agent.produces === "fraud" && record.fraud) {
     const b = record.fraud;
-    const high = b.risk_score >= 60;
-    const mid = b.risk_score >= 40 && b.risk_score < 60;
+    const rule = b.rule_risk ?? b.risk_score;
+    const narrative = b.narrative_risk ?? 0;
+    const combined = Math.min(100, rule + narrative);
+    const high = combined >= 60;
+    const mid = combined >= 40 && combined < 60;
     const color = high
       ? "var(--color-deny)"
       : mid
         ? "var(--color-escalate)"
         : "var(--color-approve)";
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <div className="flex items-baseline gap-1.5">
           <span
             className="font-display text-3xl font-bold leading-none"
             style={{ color }}
           >
-            {b.risk_score}
+            {combined}
           </span>
           <span className="mono text-[11px] text-ink-faint">/100 risk</span>
         </div>
         <p className="mono text-[11px] text-ink-faint">
-          {b.red_flags.length} red flag{b.red_flags.length === 1 ? "" : "s"}
+          {rule} rules
+          {narrative > 0 && (
+            <>
+              {" + "}
+              <span style={{ color: "var(--color-accent)" }}>
+                {narrative} model
+              </span>
+            </>
+          )}
         </p>
+        {b.narrative_rationale && (
+          <p className="border-t border-line/70 pt-2 text-[12px] italic leading-snug text-ink-muted">
+            “{b.narrative_rationale}”
+          </p>
+        )}
       </div>
     );
   }

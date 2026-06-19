@@ -136,3 +136,38 @@ def test_extract_latest_record_prefers_newest():
     record = extract_latest_record(texts)
     assert record is not None
     assert record.claim_id == "NEW"
+
+
+def test_judge_fn_failure_keeps_rule_result():
+    async def run() -> dict:
+        tools = FakeAgentTools()
+
+        async def boom(_record: object) -> object:
+            raise RuntimeError("judge unavailable")
+
+        handler = make_relay_handler(
+            "fraud",
+            "id-fraud",
+            fraud.transform,
+            fraud.summary,
+            "fraud",
+            note_fn=None,
+            judge_fn=boom,
+        )
+        with open("claims/clean.json", "r") as handle:
+            claim = json.load(handle)
+        claim["incident"]["police_report"] = False
+        content = (
+            f'@{HANDLES["fraud"]} please re-score\n'
+            f"```json\n{json.dumps(claim)}\n```"
+        )
+        await handler(_make_inp(content, tools))
+        assert len(tools.messages_sent) == 1
+        sent = tools.messages_sent[0]
+        assert HANDLES["adjudicator"] in sent["mentions"]
+        return _record_from_message(sent["content"])
+
+    final = asyncio.run(run())
+    assert final["fraud"]["rule_risk"] == 20
+    assert final["fraud"]["narrative_risk"] == 0
+    assert final["fraud"]["risk_score"] == 20

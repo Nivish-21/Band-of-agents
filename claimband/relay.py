@@ -175,6 +175,7 @@ def make_relay_handler(
     summary: Summary,
     block_attr: str,
     note_fn: Optional[NoteFn] = None,
+    judge_fn: Optional[Callable[[ClaimRecord], Awaitable[ClaimRecord]]] = None,
 ):
     """Build a deterministic ``on_event`` handler for one relay agent.
 
@@ -214,6 +215,19 @@ def make_relay_handler(
                 [HANDLES["human"]],
             )
             return
+
+        # Optional async LLM judgment that materially updates the record. The
+        # deterministic transform above is the floor/guardrail; this lets the
+        # model contribute a real decision (e.g. reading the incident narrative).
+        # Any failure falls back to the deterministic result.
+        if judge_fn is not None:
+            try:
+                record = await judge_fn(record)
+            except Exception as exc:
+                print(
+                    f"[{agent_name}] judge LLM failed ({exc}); using rule result",
+                    flush=True,
+                )
 
         note = ""
         if note_fn is not None:

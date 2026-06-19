@@ -8,8 +8,8 @@ const PILLARS: { title: string; body: string }[] = [
     body: "Agents exchange the full claim record as shared room context, route work with @mentions, and broadcast the verdict to the whole band — not a thin wrapper around a final notification.",
   },
   {
-    title: "Deterministic relay, narrating LLMs (D13)",
-    body: "Free-tier models can't reliably copy a claim JSON hop-to-hop. So the data flows through Band's shared context and is copied + validated in Python; the LLM only writes a one-line human note. The data path never depends on a model call.",
+    title: "Rules as guardrails, models for judgment",
+    body: "Data flows deterministically through Band's shared context (reliable — no JSON-shuttle failures). On top, each agent's model makes calls the rules can't: the Fraud agent reads the incident narrative and adds risk a field-check would miss. The deterministic guardrails set the hard floor; the model decides within them.",
   },
   {
     title: "Resilient by design",

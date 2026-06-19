@@ -167,16 +167,18 @@ export default function Sandbox() {
     >
       <header className="mb-10 max-w-2xl">
         <p className="mono mb-3 text-xs uppercase tracking-[0.2em] text-accent">
-          Try it yourself · runs in your browser
+          Deterministic guardrails · runs in your browser
         </p>
         <h2 id="try-heading" className="text-3xl font-bold sm:text-4xl">
           Adjudicate your own claim
         </h2>
         <p className="mt-4 text-ink-muted">
-          Edit the claim and adjudicate it live. This runs the{" "}
-          <span className="text-ink">exact same deterministic rules</span> the four
-          agents use — computed in your browser. (The real multi-agent Band relay is
-          the replay above; the logic is identical.)
+          Edit the claim and run the{" "}
+          <span className="text-ink">deterministic policy guardrails</span> the agents
+          must obey — live in your browser. These set the hard floor a regulated
+          workflow can&apos;t cross. On top of them, the agents&apos; models add{" "}
+          <span className="text-ink">narrative judgment</span> the rules can&apos;t make
+          — e.g. the Fraud agent reading the incident story (see the replay above).
         </p>
       </header>
 

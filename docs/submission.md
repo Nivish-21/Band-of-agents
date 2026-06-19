@@ -46,7 +46,7 @@ covered_amount > $10,000 → ESCALATE + human @mention. Otherwise APPROVE.
 
 **Verified live (evidence in `docs/evidence/`).** Three fixtures run end-to-end in fresh Band rooms:
 `clean` → APPROVE $3,700; `deny` → DENY (policy expired); `fraud` → ESCALATE (risk 60, human
-@mentioned). A one-command runner (`demo.py`) reproduces any case. 38 automated tests pass.
+@mentioned). A one-command runner (`demo.py`) reproduces any case. 43 automated tests pass locally.
 
 **Honest scope.** 5 of 6 internal acceptance criteria pass; Band peer-discovery/recruitment on the
 ambiguous-risk path is designed but not yet demonstrated. No frontend — the live Band room is the
@@ -65,7 +65,7 @@ demo surface.
 | Slide Presentation | `docs/slides.pdf` (rendered from `slides.md`) | ready |
 | Video Presentation | script at `docs/recording-script.md` — **needs recording** | TODO (you) |
 | Public GitHub Repo | `github.com/Nivish-21/Band-of-agents` — **confirm it is public** + push latest | TODO (you) |
-| Application URL / Demo Platform | **https://claimband-nivi-s-projects1.vercel.app** (live on Vercel) | deployed ✓ |
+| Application URL / Demo Platform | **https://claimband-nivi-s-projects1.vercel.app** (verify live status) | last known deployed |
 
 ## Note on "Application URL / Demo Application Platform"
 A static showcase frontend now exists in `web/` (Next.js, dark control-room aesthetic). It (a) replays the
