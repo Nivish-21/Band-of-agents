@@ -1,0 +1,300 @@
+Total unique messages found across all agents: 5
+
+--- MESSAGE #1 | Sender: Coverage | Time: 2026-06-19 04:32:54.775179+00:00 | ID: 4b976c3b-2fe0-423f-8162-516db4a1e41f ---
+@[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] New claim submitted for review:
+```json
+{
+  "claim_id": "CLM-DENY",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "expired",
+    "effective_date": "2025-01-01",
+    "expiry_date": "2025-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 0
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "other_party",
+    "police_report": true,
+    "description": "Rear-ended at a stop light after policy expired."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 6
+  },
+  "amount_claimed": 4200.0,
+  "intake": null,
+  "coverage": null,
+  "fraud": null,
+  "decision": null
+}
+```
+Please validate.
+
+--- MESSAGE #2 | Sender: Intake | Time: 2026-06-19 04:33:06.217278+00:00 | ID: 85c8a4ff-41e6-4f50-b760-e7b9257ded13 ---
+**Intake Agent** — Claim intake is valid with no missing fields or inconsistencies.
+
+Handing off to @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] for the next step.
+
+```json
+{
+  "claim_id": "CLM-DENY",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "expired",
+    "effective_date": "2025-01-01",
+    "expiry_date": "2025-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 0
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "other_party",
+    "police_report": true,
+    "description": "Rear-ended at a stop light after policy expired."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 6
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": null,
+  "fraud": null,
+  "decision": null
+}
+```
+
+--- MESSAGE #3 | Sender: Coverage | Time: 2026-06-19 04:33:09.558152+00:00 | ID: 238953c3-2e0b-4258-a601-201ebd66bb1d ---
+**Coverage Agent** — Policy expired before incident date; no coverage despite peril being covered.
+
+Handing off to @[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] for the next step.
+
+```json
+{
+  "claim_id": "CLM-DENY",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "expired",
+    "effective_date": "2025-01-01",
+    "expiry_date": "2025-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 0
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "other_party",
+    "police_report": true,
+    "description": "Rear-ended at a stop light after policy expired."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 6
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": {
+    "policy_active": false,
+    "peril_covered": true,
+    "deductible_applied": 0,
+    "covered_amount": 0.0,
+    "reasons": [
+      "Policy status is 'expired' (expected 'active').",
+      "Incident date 2026-06-10 falls outside the policy period (2025-01-01 to 2025-12-31).",
+      "Peril 'collision' is explicitly covered under the policy.",
+      "Claim coverage check failed; covered amount set to $0.00."
+    ]
+  },
+  "fraud": null,
+  "decision": null
+}
+```
+
+--- MESSAGE #4 | Sender: Fraud | Time: 2026-06-19 04:33:17.194166+00:00 | ID: a9254464-7c93-447e-a411-6eb76c0e468f ---
+**Fraud Agent** — Claim appears legitimate with a risk score of 0 and no red flags.
+
+Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
+
+```json
+{
+  "claim_id": "CLM-DENY",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "expired",
+    "effective_date": "2025-01-01",
+    "expiry_date": "2025-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 0
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "other_party",
+    "police_report": true,
+    "description": "Rear-ended at a stop light after policy expired."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 6
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": {
+    "policy_active": false,
+    "peril_covered": true,
+    "deductible_applied": 0,
+    "covered_amount": 0.0,
+    "reasons": [
+      "Policy status is 'expired' (expected 'active').",
+      "Incident date 2026-06-10 falls outside the policy period (2025-01-01 to 2025-12-31).",
+      "Peril 'collision' is explicitly covered under the policy.",
+      "Claim coverage check failed; covered amount set to $0.00."
+    ]
+  },
+  "fraud": {
+    "risk_score": 0,
+    "red_flags": [],
+    "reasons": [
+      "Police report was filed.",
+      "Claimant has no prior claims in the last 12 months.",
+      "Sufficient photos provided (6).",
+      "Claimant is the policy holder.",
+      "Claim amount ($4,200.00) is below the high-risk threshold.",
+      "Incident occurred 525 day(s) after policy effective date.",
+      "Calculated risk score: 0 based on 0 triggered red flag(s)."
+    ]
+  },
+  "decision": null
+}
+```
+
+--- MESSAGE #5 | Sender: Adjudicator | Time: 2026-06-19 04:33:22.675468+00:00 | ID: 60a214e4-4f27-4576-9d75-6255091223ae ---
+@[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] @[[5f4ed8cf-e454-4854-a1cc-d57b1c296d9c]] **Adjudicator Agent** — Claim is denied due to inactive policy at incident date.
+
+Final decision: **DENY**.
+
+```json
+{
+  "claim_id": "CLM-DENY",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "expired",
+    "effective_date": "2025-01-01",
+    "expiry_date": "2025-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 0
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "other_party",
+    "police_report": true,
+    "description": "Rear-ended at a stop light after policy expired."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 6
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": {
+    "policy_active": false,
+    "peril_covered": true,
+    "deductible_applied": 0,
+    "covered_amount": 0.0,
+    "reasons": [
+      "Policy status is 'expired' (expected 'active').",
+      "Incident date 2026-06-10 falls outside the policy period (2025-01-01 to 2025-12-31).",
+      "Peril 'collision' is explicitly covered under the policy.",
+      "Claim coverage check failed; covered amount set to $0.00."
+    ]
+  },
+  "fraud": {
+    "risk_score": 0,
+    "red_flags": [],
+    "reasons": [
+      "Police report was filed.",
+      "Claimant has no prior claims in the last 12 months.",
+      "Sufficient photos provided (6).",
+      "Claimant is the policy holder.",
+      "Claim amount ($4,200.00) is below the high-risk threshold.",
+      "Incident occurred 525 day(s) after policy effective date.",
+      "Calculated risk score: 0 based on 0 triggered red flag(s)."
+    ]
+  },
+  "decision": {
+    "status": "DENY",
+    "reason": "Policy is inactive at incident date. Reasons: Policy status is 'expired' (expected 'active').; Incident date 2026-06-10 falls outside the policy period (2025-01-01 to 2025-12-31).; Peril 'collision' is explicitly covered under the policy.; Claim coverage check failed; covered amount set to $0.00.",
+    "final_amount": 0.0
+  }
+}
+```

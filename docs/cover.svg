@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1120"/>
+      <stop offset="1" stop-color="#111c3a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="6" fill="url(#accent)"/>
+
+  <!-- Title -->
+  <text x="100" y="150" fill="#f8fafc" font-size="92" font-weight="700" letter-spacing="-2">ClaimBand</text>
+  <text x="102" y="205" fill="#94a3b8" font-size="30" font-weight="400">Cross-framework multi-agent claim adjudication</text>
+  <text x="102" y="245" fill="#64748b" font-size="24" font-weight="400">Four remote agents · one Band room · APPROVE / DENY / ESCALATE</text>
+
+  <!-- Relay pipeline -->
+  <g transform="translate(0,360)">
+    <!-- connecting line -->
+    <line x1="190" y1="40" x2="1010" y2="40" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- nodes -->
+    <g text-anchor="middle">
+      <circle cx="190" cy="40" r="58" fill="#0f172a" stroke="url(#accent)" stroke-width="2.5"/>
+      <text x="190" y="34" fill="#f8fafc" font-size="22" font-weight="600">Intake</text>
+      <text x="190" y="60" fill="#7dd3fc" font-size="15">LangGraph</text>
+
+      <circle cx="463" cy="40" r="58" fill="#0f172a" stroke="url(#accent)" stroke-width="2.5"/>
+      <text x="463" y="34" fill="#f8fafc" font-size="22" font-weight="600">Coverage</text>
+      <text x="463" y="60" fill="#7dd3fc" font-size="15">Gemini SDK</text>
+
+      <circle cx="736" cy="40" r="58" fill="#0f172a" stroke="url(#accent)" stroke-width="2.5"/>
+      <text x="736" y="34" fill="#f8fafc" font-size="22" font-weight="600">Fraud</text>
+      <text x="736" y="60" fill="#7dd3fc" font-size="15">LangGraph</text>
+
+      <circle cx="1009" cy="40" r="58" fill="#0f172a" stroke="url(#accent)" stroke-width="2.5"/>
+      <text x="1009" y="30" fill="#f8fafc" font-size="20" font-weight="600">Adjudic-</text>
+      <text x="1009" y="52" fill="#f8fafc" font-size="20" font-weight="600">ator</text>
+      <text x="1009" y="74" fill="#7dd3fc" font-size="15">CrewAI</text>
+    </g>
+  </g>
+
+  <!-- Footer -->
+  <text x="100" y="585" fill="#94a3b8" font-size="24" font-weight="500">Band of Agents Hackathon — Track 3</text>
+  <text x="1100" y="585" text-anchor="end" fill="#64748b" font-size="20">3 frameworks · 2 vendors (Groq + Gemini)</text>
+</svg>

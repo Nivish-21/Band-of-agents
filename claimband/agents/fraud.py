@@ -1,74 +1,55 @@
+"""Fraud agent — LangGraph adapter + Groq (gpt-oss-120b).
+
+Scores fraud risk, then hands off to the Adjudicator. Deterministic relay (D13).
+"""
+
 import os
-import json
 import asyncio
 from pathlib import Path
-from dotenv import load_dotenv
-from pydantic import BaseModel, Field
-import openai
-import logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 from band import Agent
 from band.adapters import LangGraphAdapter
-from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
-from langgraph.checkpoint.memory import InMemorySaver
 from band.config import load_agent_config
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import InMemorySaver
 
 from claimband.schema import ClaimRecord
 from claimband.scoring import score_risk
-
-load_dotenv(override=True)
+from claimband.notes import groq_note
+from claimband.relay import make_relay_handler, serve
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "fraud.md"
 with open(PROMPT_PATH, "r") as f:
     FRAUD_PROMPT = f.read()
 
-
-class FraudInput(BaseModel):
-    claim_record_json: str = Field(
-        description="The full JSON string of the current claim record."
-    )
+AGENT_NAME = "fraud"
 
 
-@tool("score_risk", args_schema=FraudInput)
-def run_score_risk(claim_record_json: str) -> str:
-    """Computes risk score and returns the full JSON record with fraud block."""
-    try:
-        data = json.loads(claim_record_json)
-        claim = ClaimRecord.model_validate(data)
-        block = score_risk(claim)
-        claim.fraud = block
-        return claim.model_dump_json()
-    except Exception as e:
-        return f"Error computing risk score: {str(e)}"
+def transform(record: ClaimRecord) -> ClaimRecord:
+    record.fraud = score_risk(record)
+    return record
 
 
-class WrappedChatOpenAI(ChatOpenAI):
-    async def _astream(self, *args, **kwargs):
-        try:
-            async for chunk in super()._astream(*args, **kwargs):
-                yield chunk
-        except openai.APIError as e:
-            print(f"--- Groq APIError Body: {getattr(e, 'body', None)} ---", flush=True)
-            raise e
-
-    async def ainvoke(self, *args, **kwargs):
-        try:
-            return await super().ainvoke(*args, **kwargs)
-        except openai.APIError as e:
-            print(f"--- Groq APIError Body: {getattr(e, 'body', None)} ---", flush=True)
-            raise e
+def summary(record: ClaimRecord) -> str:
+    block = record.fraud
+    if block is None:
+        return f"Fraud screen incomplete for claim {record.claim_id}."
+    flags = ", ".join(block.red_flags) if block.red_flags else "no red flags"
+    return f"Fraud risk score {block.risk_score}/100 — {flags}."
 
 
-async def main():
-    agent_id, api_key = load_agent_config("fraud")
+async def note_fn(record: ClaimRecord) -> str:
+    return await groq_note(f"Fraud screening result: {record.fraud.model_dump_json()}")
 
+
+def _make_agent() -> Agent:
+    agent_id, api_key = load_agent_config(AGENT_NAME)
     adapter = LangGraphAdapter(
-        llm=WrappedChatOpenAI(
+        llm=ChatOpenAI(
             model="openai/gpt-oss-120b",
             base_url=os.environ["GROQ_BASE_URL"],
             api_key=os.environ["GROQ_API_KEY"],
@@ -76,10 +57,11 @@ async def main():
         ),
         checkpointer=InMemorySaver(),
         custom_section=FRAUD_PROMPT,
-        additional_tools=[run_score_risk],
     )
-
-    agent = Agent.create(
+    adapter.on_event = make_relay_handler(
+        AGENT_NAME, agent_id, transform, summary, "fraud", note_fn
+    )
+    return Agent.create(
         adapter=adapter,
         agent_id=agent_id,
         api_key=api_key,
@@ -87,12 +69,13 @@ async def main():
         rest_url=os.environ["BAND_REST_URL"],
     )
 
-    print("Starting Fraud Agent...")
-    try:
-        await agent.run()
-    except openai.APIError as e:
-        print(f"Groq APIError: {e}")
-        print(f"Details: {getattr(e, 'body', None)}")
+
+async def main() -> None:
+    room_id = os.environ.get("BAND_ROOM_ID", "UNKNOWN")
+    print("[Fraud] framework=LangGraph vendor=Groq", flush=True)
+    print(f"[Fraud] connect OK - Room ID: {room_id}", flush=True)
+    print("Starting Fraud Agent...", flush=True)
+    await serve(AGENT_NAME, _make_agent)
 
 
 if __name__ == "__main__":

@@ -1,59 +1,73 @@
+"""Adjudicator agent — CrewAI adapter + Groq (groq/openai/gpt-oss-120b, see D12).
+
+Produces the final APPROVE / DENY / ESCALATE decision and routes to the human.
+Deterministic relay (D13): terminal hop, mentions the human (esp. on ESCALATE).
+"""
+
 import os
 import asyncio
 from pathlib import Path
-from dotenv import load_dotenv
-import logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 from band import Agent
 from band.adapters import CrewAIAdapter
 from band.config import load_agent_config
-import json
-from pydantic import BaseModel, Field
+
 from claimband.schema import ClaimRecord
 from claimband.adjudication import adjudicate_claim
-
-load_dotenv(override=True)
-os.environ["LITELLM_MAX_RETRIES"] = "2"
+from claimband.notes import groq_note
+from claimband.relay import make_relay_handler, serve
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "adjudicator.md"
 with open(PROMPT_PATH, "r") as f:
     ADJUDICATOR_BACKSTORY = f.read()
 
+AGENT_NAME = "adjudicator"
 
-class AdjudicatorInput(BaseModel):
-    claim_record_json: str = Field(
-        description="The full JSON string of the current claim record."
+
+def transform(record: ClaimRecord) -> ClaimRecord:
+    record.decision = adjudicate_claim(record)
+    return record
+
+
+def summary(record: ClaimRecord) -> str:
+    block = record.decision
+    if block is None:
+        return f"No decision reached for claim {record.claim_id}."
+    if block.status == "APPROVE":
+        return f"APPROVE — ${block.final_amount:,.0f} payable. {block.reason}"
+    return f"{block.status} — {block.reason}"
+
+
+async def note_fn(record: ClaimRecord) -> str:
+    return await groq_note(
+        f"Adjudication decision: {record.decision.model_dump_json()}"
     )
 
 
-def run_adjudicate(args: AdjudicatorInput) -> str:
-    # SDK tuple-tool convention: the callable receives the validated InputModel
-    # instance (see band.runtime.custom_tools.execute_custom_tool), not the raw field.
-    try:
-        data = json.loads(args.claim_record_json)
-        claim = ClaimRecord.model_validate(data)
-        claim.decision = adjudicate_claim(claim)
-        return claim.model_dump_json()
-    except Exception as e:
-        return f"Error adjudicating claim: {str(e)}"
+async def _skip_crew_init(*_args, **_kwargs) -> None:
+    # The deterministic relay overrides on_event, so the CrewAI crew/LLM is
+    # never invoked. Skip its on_started LLM init (which needs litellm for
+    # groq/* models) — we only use this adapter for Band identity + transport.
+    return None
 
 
-async def main():
-    agent_id, api_key = load_agent_config("adjudicator")
-
+def _make_agent() -> Agent:
+    agent_id, api_key = load_agent_config(AGENT_NAME)
     adapter = CrewAIAdapter(
-        model="gemini/gemini-2.5-flash-lite",
+        model="groq/openai/gpt-oss-120b",
         role="Claims Adjudicator",
         goal="Decide APPROVE/DENY/ESCALATE from peer findings",
         backstory=ADJUDICATOR_BACKSTORY,
-        additional_tools=[(AdjudicatorInput, run_adjudicate)],
     )
-
-    agent = Agent.create(
+    adapter.on_event = make_relay_handler(
+        AGENT_NAME, agent_id, transform, summary, "decision", note_fn
+    )
+    adapter.on_started = _skip_crew_init
+    return Agent.create(
         adapter=adapter,
         agent_id=agent_id,
         api_key=api_key,
@@ -61,8 +75,13 @@ async def main():
         rest_url=os.environ["BAND_REST_URL"],
     )
 
-    print("Starting Adjudicator Agent...")
-    await agent.run()
+
+async def main() -> None:
+    room_id = os.environ.get("BAND_ROOM_ID", "UNKNOWN")
+    print("[Adjudicator] framework=CrewAI vendor=Groq", flush=True)
+    print(f"[Adjudicator] connect OK - Room ID: {room_id}", flush=True)
+    print("Starting Adjudicator Agent...", flush=True)
+    await serve(AGENT_NAME, _make_agent)
 
 
 if __name__ == "__main__":

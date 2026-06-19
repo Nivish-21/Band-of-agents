@@ -1,0 +1,308 @@
+Total unique messages found across all agents: 5
+
+--- MESSAGE #1 | Sender: Coverage | Time: 2026-06-19 04:36:11.710885+00:00 | ID: 1133b4a1-f795-49d7-a8cd-579b83aa3b0f ---
+@[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] New claim submitted for review:
+```json
+{
+  "claim_id": "CLM-FRAUD",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "active",
+    "effective_date": "2026-01-01",
+    "expiry_date": "2026-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 3
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "self",
+    "police_report": false,
+    "description": "Scraped against a wall."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 1
+  },
+  "amount_claimed": 4200.0,
+  "intake": null,
+  "coverage": null,
+  "fraud": null,
+  "decision": null
+}
+```
+Please validate.
+
+--- MESSAGE #2 | Sender: Intake | Time: 2026-06-19 04:36:17.913617+00:00 | ID: 5912c754-1411-4e97-a893-d22a9dcd876d ---
+**Intake Agent** — Claim intake is valid with no missing fields or inconsistencies.
+
+Handing off to @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] for the next step.
+
+```json
+{
+  "claim_id": "CLM-FRAUD",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "active",
+    "effective_date": "2026-01-01",
+    "expiry_date": "2026-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 3
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "self",
+    "police_report": false,
+    "description": "Scraped against a wall."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 1
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": null,
+  "fraud": null,
+  "decision": null
+}
+```
+
+--- MESSAGE #3 | Sender: Coverage | Time: 2026-06-19 04:36:20.166227+00:00 | ID: 8627fc12-1f8d-4498-b7d1-b7cbc0122d5c ---
+**Coverage Agent** — Covered: $3,700 payable after $500 deductible.
+
+Handing off to @[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] for the next step.
+
+```json
+{
+  "claim_id": "CLM-FRAUD",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "active",
+    "effective_date": "2026-01-01",
+    "expiry_date": "2026-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 3
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "self",
+    "police_report": false,
+    "description": "Scraped against a wall."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 1
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": {
+    "policy_active": true,
+    "peril_covered": true,
+    "deductible_applied": 500,
+    "covered_amount": 3700.0,
+    "reasons": [
+      "Policy status is active.",
+      "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
+      "Peril 'collision' is explicitly covered under the policy.",
+      "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+    ]
+  },
+  "fraud": null,
+  "decision": null
+}
+```
+
+--- MESSAGE #4 | Sender: Fraud | Time: 2026-06-19 04:36:26.705612+00:00 | ID: 931ac500-2edd-4d82-a6d3-3efa4e2dcde4 ---
+**Fraud Agent** — Claim appears fraudulent due to low photo count and prior claims.
+
+Handing off to @[[c90a5d2b-7974-49c6-bb13-59457bd9e1a0]] for the next step.
+
+```json
+{
+  "claim_id": "CLM-FRAUD",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "active",
+    "effective_date": "2026-01-01",
+    "expiry_date": "2026-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 3
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "self",
+    "police_report": false,
+    "description": "Scraped against a wall."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 1
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": {
+    "policy_active": true,
+    "peril_covered": true,
+    "deductible_applied": 500,
+    "covered_amount": 3700.0,
+    "reasons": [
+      "Policy status is active.",
+      "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
+      "Peril 'collision' is explicitly covered under the policy.",
+      "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+    ]
+  },
+  "fraud": {
+    "risk_score": 60,
+    "red_flags": [
+      "No police report filed for the incident.",
+      "Claimant has 3 prior claim(s) in the last 12 months.",
+      "Low photo count (1 photos provided, minimum of 3 expected)."
+    ],
+    "reasons": [
+      "Red Flag Triggered: No police report filed for the incident.",
+      "Red Flag Triggered: Claimant has 3 prior claim(s) in the last 12 months.",
+      "Red Flag Triggered: Low photo count (1 photos provided, minimum of 3 expected).",
+      "Claimant is the policy holder.",
+      "Claim amount ($4,200.00) is below the high-risk threshold.",
+      "Incident occurred 160 day(s) after policy effective date.",
+      "Calculated risk score: 60 based on 3 triggered red flag(s)."
+    ]
+  },
+  "decision": null
+}
+```
+
+--- MESSAGE #5 | Sender: Adjudicator | Time: 2026-06-19 04:36:30.985385+00:00 | ID: fe1aed8d-9e40-4b69-9533-7bfed6ed46db ---
+@[[bf900eb2-2bd5-41e2-b764-a74c94d07362]] @[[c356072b-5f06-40a0-a3b5-ce562520fff2]] @[[8f6c3c7d-bf66-4b2c-8c52-69254772fb3e]] **Adjudicator Agent** — Claim escalated due to high risk score and red flags detected.
+
+@[[5f4ed8cf-e454-4854-a1cc-d57b1c296d9c]] this claim is **ESCALATED** for human review.
+
+```json
+{
+  "claim_id": "CLM-FRAUD",
+  "policy": {
+    "policy_id": "POL-552",
+    "status": "active",
+    "effective_date": "2026-01-01",
+    "expiry_date": "2026-12-31",
+    "coverage": {
+      "collision": true,
+      "liability_limit": 50000,
+      "deductible": 500
+    }
+  },
+  "claimant": {
+    "name": "Jane Doe",
+    "is_policy_holder": true,
+    "prior_claims_12mo": 3
+  },
+  "incident": {
+    "date": "2026-06-10",
+    "type": "collision",
+    "at_fault": "self",
+    "police_report": false,
+    "description": "Scraped against a wall."
+  },
+  "damage": {
+    "vehicle": "2021 Honda Civic",
+    "estimate_amount": 4200.0,
+    "photos_count": 1
+  },
+  "amount_claimed": 4200.0,
+  "intake": {
+    "is_valid": true,
+    "missing_fields": [],
+    "inconsistencies": [],
+    "completeness_score": 100.0
+  },
+  "coverage": {
+    "policy_active": true,
+    "peril_covered": true,
+    "deductible_applied": 500,
+    "covered_amount": 3700.0,
+    "reasons": [
+      "Policy status is active.",
+      "Incident date 2026-06-10 is within the policy period (2026-01-01 to 2026-12-31).",
+      "Peril 'collision' is explicitly covered under the policy.",
+      "Deductible of $500.00 applied. Covered amount: $3,700.00 (min(Estimate, Limit) - Deductible)."
+    ]
+  },
+  "fraud": {
+    "risk_score": 60,
+    "red_flags": [
+      "No police report filed for the incident.",
+      "Claimant has 3 prior claim(s) in the last 12 months.",
+      "Low photo count (1 photos provided, minimum of 3 expected)."
+    ],
+    "reasons": [
+      "Red Flag Triggered: No police report filed for the incident.",
+      "Red Flag Triggered: Claimant has 3 prior claim(s) in the last 12 months.",
+      "Red Flag Triggered: Low photo count (1 photos provided, minimum of 3 expected).",
+      "Claimant is the policy holder.",
+      "Claim amount ($4,200.00) is below the high-risk threshold.",
+      "Incident occurred 160 day(s) after policy effective date.",
+      "Calculated risk score: 60 based on 3 triggered red flag(s)."
+    ]
+  },
+  "decision": {
+    "status": "ESCALATE",
+    "reason": "High risk score detected (60 >= 60). Red flags: No police report filed for the incident.; Claimant has 3 prior claim(s) in the last 12 months.; Low photo count (1 photos provided, minimum of 3 expected).",
+    "final_amount": 3700.0
+  }
+}
+```

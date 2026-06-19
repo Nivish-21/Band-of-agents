@@ -113,3 +113,56 @@ Coverage stays on GeminiAdapter as the genuine Gemini showcase.
 **Reasoning:** preserves the scored narrative — **3 frameworks** (LangGraph, Gemini SDK, CrewAI) and
 **2 vendors** (Groq + Gemini) — while cutting Gemini load per relay 2 → 1, roughly doubling daily
 relay headroom. The cross-framework story does not require every agent on a different vendor.
+
+## D13 — Deterministic relay over Band shared context; LLM as reasoning narrator (user-ratified, 2026-06-19)
+**Context:** the pure-LLM relay never completed a single hop across many attempts. Confirmed root cause
+(Gemini's own log): `Tool call validation failed: missing properties: 'claim_record_json'`. The design
+forced each free-tier model to copy the entire claim JSON into a tool argument AND again into the
+handoff message at all 4 hops; `gpt-oss-120b` drops the large argument. Prompt-tightening did not and
+will not reliably fix this on small models. (Also found: `fraud.py` was syntactically corrupted and
+`logger_wrapper.py` wrapped non-existent SDK methods — symptoms of the builder guessing the API.)
+**SDK facts verified in source:** adapters implement `on_event(inp: AgentInput)` (not `on_message`);
+`inp.tools.send_message(content, mentions: list[str])` resolves handles against room participants and
+**requires ≥1 mention**; `DefaultPreprocessor` does **self-message filtering but NO mention-gating**,
+and loads history **only on session bootstrap** (later events arrive with empty history). Live room
+participants/handles captured: human `nivishnick2k`, agents `nivishnick2k/{intake,coverage,fraud,adjudicator}`.
+**Chosen:** a deterministic relay engine (`claimband/relay.py`). Each agent keeps its framework adapter
+(LangGraph/Gemini/CrewAI — transport + identity), but its `on_event` is overridden with a handler that:
+(1) gates on whether THIS agent is mentioned in the inbound message (enforces relay order regardless of
+delivery breadth); (2) extracts the latest claim record deterministically from the message content via a
+fenced-JSON parser (no LLM copying); (3) runs the tested pure function; (4) optionally calls the agent's
+own vendor LLM for a one-line reasoning note (best-effort, templated fallback on error/429); (5) posts
+the updated full record + the note, mentioning the next agent — adjudicator mentions the human on ESCALATE.
+**Alternatives:** keep fighting the pure-LLM relay (rejected: structurally unreliable on free models,
+0/N success, deadline today); a fully custom adapter with no framework (rejected: guts the cross-framework
+story). **Reasoning:** guarantees a working, quota-light end-to-end demo today; showcases Band's shared
+room context (its actual value prop) rather than fragile point-to-point JSON shuttling; preserves the
+3-framework / 2-vendor narrative because the LLM still reasons per hop and each agent is built on a
+distinct framework adapter. **Trade-off accepted:** the data path is deterministic, not LLM-improvised —
+correct for a regulated/high-stakes domain where deterministic decisioning is a feature, not a weakness.
+
+## D14 — Relay hardening decisions made during live bring-up (planner, 2026-06-19)
+**Process note:** these four were decided reactively while debugging the live relay, NOT pre-planned.
+Recording them after the fact (the lapse is logged in lessons.md). All are in the code and live-verified
+for `clean.json → APPROVE` and `deny.json → DENY`.
+1. **Supervisor reconnect (`relay.serve`)** — the platform issues a *terminal* WS close (idle/replaced)
+   after which the SDK disables auto-reconnect and `agent.run()` returns. `serve()` rebuilds a fresh
+   agent and reconnects with a 3s backoff so a drop can't end the agent. Alternative (patch SDK
+   reconnect internals) rejected as a deadline rabbit hole.
+2. **Idempotency guard (`block_attr`)** — each agent skips if the ClaimRecord field it populates is
+   already set. Makes the relay safe against backlog re-delivery and the broadcast (below). Without it,
+   a redelivered/echoed record restarts the chain → infinite loop.
+3. **Broadcast final verdict** — the adjudicator's terminal message mentions human + all 3 peer agents
+   (not just the human). Reason: `list_agent_messages` is **mention-scoped**, so a human-only mention is
+   invisible to agent-key queries (the decision couldn't be captured in the trail). Broadcasting makes
+   the verdict visible to the whole band and the evidence tooling; the idempotency guard stops it
+   re-triggering the relay. **This is also a nicer demo** (the band sees the verdict).
+4. **CrewAI `on_started` no-op (adjudicator)** — since `on_event` is overridden, the crew LLM is never
+   used; its `on_started` tried to build `LLM(groq/openai/gpt-oss-120b)` which needs `litellm` (absent)
+   and crashed. No-op'd it — the adapter is only Band identity/transport here.
+**Note:** the note model for Groq agents is `llama-3.3-70b-versatile` (D-note), because `gpt-oss-120b`
+is a reasoning model that returns empty visible content for tiny note prompts. Gemini notes currently
+hit the free-tier 20/day cap → template fallback (relay unaffected — proves the D13 resilience).
+**Operational debt to clean up:** three throwaway rooms were created during bring-up
+(`38dc6e6c…`, `2e7e1b59…`, `34cd5ad4…`); current `BAND_ROOM_ID` is `34cd5ad4…`. `clear_room.py` is buggy
+(mishandles the list response). Pick ONE demo room and delete the orphans (or leave them — harmless).

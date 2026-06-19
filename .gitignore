@@ -12,5 +12,8 @@ __pycache__/
 build/
 dist/
 
+# Local agent config (enables Gemini YOLO — keep local, never publish)
+.gemini/
+
 # OS
 .DS_Store

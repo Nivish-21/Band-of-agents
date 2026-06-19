@@ -23,7 +23,7 @@ graph TD
 | **Intake** | Validates required fields, checks for inconsistencies, scores completeness. | LangGraph | Groq (`llama-3.3-70b-versatile`) | `intake` block |
 | **Coverage** | Checks policy status, dates, limits, and peril matching. | Gemini SDK | Google Gemini (`gemini-2.5-flash`) | `coverage` block |
 | **Fraud** | Scans for red flags and computes a 0-100 risk score. | LangGraph | Groq (`openai/gpt-oss-120b`) | `fraud` block |
-| **Adjudicator** | Synthesizes peer findings to determine APPROVE, DENY, or ESCALATE. | CrewAI | Google Gemini (`gemini-2.5-flash`) | `decision` block |
+| **Adjudicator** | Synthesizes peer findings to determine APPROVE, DENY, or ESCALATE. | CrewAI | Groq (`groq/openai/gpt-oss-120b`, see D12) | `decision` block |
 
 **Shared Context**: The state passed between agents is the structured claim JSON. Each agent reads the JSON, uses its tools to process the payload, injects its specific block into the JSON, and hands it off to the next agent via a Band `@mention`.
 
@@ -49,23 +49,37 @@ graph TD
 
 ## Running the Demo
 
-1. **Start the Agents**:
-   In 4 separate terminal tabs, run each agent:
-   ```bash
-   source .venv/bin/activate && python claimband/agents/intake.py
-   source .venv/bin/activate && python claimband/agents/coverage.py
-   source .venv/bin/activate && python claimband/agents/fraud.py
-   source .venv/bin/activate && python claimband/agents/adjudicator.py
-   ```
+Order matters: the room must exist **before** the agents start, because they read
+`BAND_ROOM_ID` from `.env` on connect.
 
-2. **Create a Band Room**:
-   - Go to [band.ai](https://app.band.ai).
-   - Create a room and invite all 4 agents (`@intake`, `@coverage`, `@fraud`, `@adjudicator`).
-   - Note the room ID from the URL.
+1. **Create a Band Room** (do this first):
+   ```bash
+   PYTHONPATH=. python create_new_room.py
+   ```
+   This creates a room, adds all 4 agents + the human owner as participants, and writes the
+   new `BAND_ROOM_ID` into `.env`.
+
+2. **Start the Agents**:
+   Run all four agents concurrently. They each print `connect OK - Room ID: <id>` and the
+   orchestrator asserts `PRE-FLIGHT OK` once all four are in the same room:
+   ```bash
+   PYTHONPATH=. python run_all.py
+   ```
 
 3. **Post a Claim**:
-   Run the seed script to start the adjudication relay:
+   In a second shell, seed a fixture to start the adjudication relay:
    ```bash
-   python seed.py <room_id> clean.json
+   PYTHONPATH=. python seed.py <fixture_name>
    ```
-   You can also test with `deny.json` and `fraud.json` to observe different decision paths.
+   For example, `seed.py clean.json` (→ APPROVE), `deny.json` (→ DENY), or `fraud.json`
+   (→ ESCALATE + human @mention). Watch the relay in the Band room or the agent logs.
+   Captured trails for each fixture live under `docs/evidence/dr3-*.txt`.
+
+### Note on the Gemini free tier
+
+The Coverage agent narrates its one-line note with Gemini. The free tier caps usage at
+**20 requests/day** (`gemini-2.5-flash-lite`); once exhausted, Gemini returns HTTP 429
+`RESOURCE_EXHAUSTED`. This is expected and harmless: the deterministic relay (D13) keeps the
+claim data in the shared Band context and only uses the LLM for a cosmetic note, so on a 429
+the agent falls back to a templated note and the relay still completes end-to-end. The data
+path never depends on a model call.

@@ -1,72 +1,61 @@
+"""Intake agent — LangGraph adapter + Groq (gpt-oss-120b).
+
+Validates the incoming claim, then hands off to Coverage. Uses the
+deterministic relay engine (see D13): the framework adapter provides
+identity/transport while ``on_event`` is the relay handler.
+"""
+
 import os
 import asyncio
 from pathlib import Path
-from dotenv import load_dotenv
-import openai
-import logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 from band import Agent
 from band.adapters import LangGraphAdapter
-from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
-from langgraph.checkpoint.memory import InMemorySaver
 from band.config import load_agent_config
-import json
-from pydantic import BaseModel, Field
-from claimband.schema import ClaimRecord, validate_claim
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import InMemorySaver
 
-load_dotenv(override=True)
+from claimband.schema import ClaimRecord, validate_claim
+from claimband.notes import groq_note
+from claimband.relay import make_relay_handler, serve
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "intake.md"
 with open(PROMPT_PATH, "r") as f:
     INTAKE_PROMPT = f.read()
 
+AGENT_NAME = "intake"
 
-class IntakeInput(BaseModel):
-    claim_record_json: str = Field(
-        description="The full JSON string of the current claim record."
+
+def transform(record: ClaimRecord) -> ClaimRecord:
+    record.intake = validate_claim(record.model_dump(mode="json"))
+    return record
+
+
+def summary(record: ClaimRecord) -> str:
+    block = record.intake
+    if block is not None and block.is_valid:
+        return (
+            f"Claim {record.claim_id} validated — complete and consistent "
+            f"({block.completeness_score:.0f}% completeness)."
+        )
+    issues = (block.missing_fields + block.inconsistencies) if block else []
+    return f"Claim {record.claim_id} validated with issues: {', '.join(issues) or 'none recorded'}."
+
+
+async def note_fn(record: ClaimRecord) -> str:
+    return await groq_note(
+        f"Intake validation result: {record.intake.model_dump_json()}"
     )
 
 
-@tool("validate_claim", args_schema=IntakeInput)
-def run_validate_claim(claim_record_json: str) -> str:
-    """Validates the claim and returns the full JSON record with intake block."""
-    try:
-        data = json.loads(claim_record_json)
-        block = validate_claim(data)
-        claim = ClaimRecord.model_validate(data)
-        claim.intake = block
-        return claim.model_dump_json()
-    except Exception as e:
-        return f"Error validating claim: {str(e)}"
-
-
-class WrappedChatOpenAI(ChatOpenAI):
-    async def _astream(self, *args, **kwargs):
-        try:
-            async for chunk in super()._astream(*args, **kwargs):
-                yield chunk
-        except openai.APIError as e:
-            print(f"--- Groq APIError Body: {getattr(e, 'body', None)} ---", flush=True)
-            raise e
-
-    async def ainvoke(self, *args, **kwargs):
-        try:
-            return await super().ainvoke(*args, **kwargs)
-        except openai.APIError as e:
-            print(f"--- Groq APIError Body: {getattr(e, 'body', None)} ---", flush=True)
-            raise e
-
-
-async def main():
-    agent_id, api_key = load_agent_config("intake")
-
+def _make_agent() -> Agent:
+    agent_id, api_key = load_agent_config(AGENT_NAME)
     adapter = LangGraphAdapter(
-        llm=WrappedChatOpenAI(
+        llm=ChatOpenAI(
             model="openai/gpt-oss-120b",
             base_url=os.environ["GROQ_BASE_URL"],
             api_key=os.environ["GROQ_API_KEY"],
@@ -74,10 +63,11 @@ async def main():
         ),
         checkpointer=InMemorySaver(),
         custom_section=INTAKE_PROMPT,
-        additional_tools=[run_validate_claim],
     )
-
-    agent = Agent.create(
+    adapter.on_event = make_relay_handler(
+        AGENT_NAME, agent_id, transform, summary, "intake", note_fn
+    )
+    return Agent.create(
         adapter=adapter,
         agent_id=agent_id,
         api_key=api_key,
@@ -85,12 +75,13 @@ async def main():
         rest_url=os.environ["BAND_REST_URL"],
     )
 
-    print("Starting Intake Agent...")
-    try:
-        await agent.run()
-    except openai.APIError as e:
-        print(f"Groq APIError: {e}")
-        print(f"Details: {getattr(e, 'body', None)}")
+
+async def main() -> None:
+    room_id = os.environ.get("BAND_ROOM_ID", "UNKNOWN")
+    print("[Intake] framework=LangGraph vendor=Groq", flush=True)
+    print(f"[Intake] connect OK - Room ID: {room_id}", flush=True)
+    print("Starting Intake Agent...", flush=True)
+    await serve(AGENT_NAME, _make_agent)
 
 
 if __name__ == "__main__":

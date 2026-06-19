@@ -1,0 +1,9 @@
+[adjudicator] [Adjudicator] framework=CrewAI vendor=Groq
+[adjudicator] [Adjudicator] connect OK - Room ID: 2368fc1d-ff96-49f1-92e4-cbdd6504b411
+[intake] [Intake] framework=LangGraph vendor=Groq
+[intake] [Intake] connect OK - Room ID: 2368fc1d-ff96-49f1-92e4-cbdd6504b411
+[fraud] [Fraud] framework=LangGraph vendor=Groq
+[fraud] [Fraud] connect OK - Room ID: 2368fc1d-ff96-49f1-92e4-cbdd6504b411
+[coverage] [Coverage] framework=Gemini-SDK vendor=Gemini
+[coverage] [Coverage] connect OK - Room ID: 2368fc1d-ff96-49f1-92e4-cbdd6504b411
+✅ PRE-FLIGHT OK: All agents joined Room ID: 2368fc1d-ff96-49f1-92e4-cbdd6504b411

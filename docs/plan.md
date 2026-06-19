@@ -285,3 +285,39 @@ Fix in this exact priority order, then dry-run. Confirm two facts first: **OWNER
 
 ## Out of scope (do not start)
 - band_io.py refactor, WebSocket reconnect hardening, multimodal/OCR, custom dashboard.
+
+---
+
+# PHASE 6 — Finish the relay + submission (drafted 2026-06-19, AWAITING APPROVAL; executor = Gemini)
+
+## Where this stands (live-verified by planner)
+- Deterministic relay (D13) built; hardened (D14). 23 tests pass (`PYTHONPATH=. pytest`).
+- **Live PASS:** `clean.json → APPROVE $3,700`, `deny.json → DENY (policy expired)` — full 4-agent
+  relays in the Band room, decision broadcast to the band.
+- **Not yet verified:** `fraud.json → ESCALATE`.
+- Agents are currently **stopped**. Current `BAND_ROOM_ID=34cd5ad4-14be-47b1-bb3e-0fd2ee2d6fdb`.
+
+## Steps (Gemini executes after approval; one report per step)
+- [ ] **S1 — Verify ESCALATE.** Launch `run_all.py` (tracked, foreground-of-its-own-process so the
+      harness doesn't reap it), confirm 4× `connect OK` same room + `PRE-FLIGHT OK`, then
+      `python seed.py fraud.json`. Confirm the room shows Intake→Coverage→Fraud→Adjudicator and a final
+      **ESCALATE** that **@mentions the human** (`nivishnick2k`) — this is acceptance criterion 5
+      (human-in-loop). Capture the trail.
+- [ ] **S2 — Evidence.** Save the full room trail per fixture to `docs/evidence/dr3-clean.txt`,
+      `dr3-deny.txt`, `dr3-fraud.txt` (use a merged 4-agent-key dump; the verdict is only visible because
+      it is broadcast — see D14.3). Map each to the 6 acceptance criteria in `docs/prd.md §Acceptance`.
+- [ ] **S3 — Room hygiene.** Choose ONE demo room; delete the other two orphan rooms (or document why
+      left). Fix or delete `clear_room.py` (it mishandles the list response). Destructive → confirm first.
+- [ ] **S4 — Submission assets** (per D7): slide deck (pptx skill), 3-min recording script
+      (seed → 4-agent relay → human-in-loop on ESCALATE → verdict), cover image. README final polish +
+      verify run instructions from a clean checkout. Honestly note the Gemini free-tier 20/day cap →
+      coverage uses a template note (the relay is resilient by design).
+- [ ] **S5 — Planner cold-verify.** Planner reads the actual `docs/evidence/*` messages (not a report)
+      and signs off the 6 criteria.
+
+## Hard constraints for the executor
+- Plan-first discipline resumes: any NEW architectural change → stop, add a plan block, get approval.
+  Do not free-wheel fixes (the lesson from this session — see lessons.md).
+- Touch only: `claimband/*`, `run_all.py`, `docs/*`, room-housekeeping scripts. No new frameworks/scope.
+- Secrets stay gitignored. Destructive ops (room/message deletion) → confirm first.
+- Do NOT re-litigate D13/D14 — the relay is verified; build on it.

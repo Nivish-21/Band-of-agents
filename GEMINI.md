@@ -38,3 +38,31 @@ Strict typing, explicit errors, immutable data, imports at top, pydantic validat
 
 ## Do NOT
 Commit secrets; add OCR / dashboard / DB / auth; re-decide settled choices; mark done before tests + lint pass and `docs/status.md` is updated.
+
+## ⚠️ UNATTENDED / AUTONOMOUS MODE — HARD GUARDRAILS (read this)
+You are running with auto-approval (YOLO): no human will confirm your commands. That trust is
+conditional. **NEVER do anything irreversible or outward-facing without a human present.** Specifically:
+
+**FORBIDDEN while unattended (do not run, ever, without explicit human go-ahead):**
+- `git push`, `gh pr ...`, `gh issue ...`, any publish to GitHub or a remote. Local commits are fine.
+- Deleting or overwriting anything you did not create this session: Band **rooms/messages**, files,
+  branches. The Phase 6 "delete orphan rooms" step is **DEFERRED** — leave the orphan rooms for the
+  user; do NOT delete them, and do NOT run/repair `clear_room.py` unattended.
+- `pip install` / `npm i -g` / any global or outside-`.venv` install. Use the existing `.venv` only:
+  run Python as `PYTHONPATH=. ./.venv/bin/python ...`.
+- `rm -rf`, `git reset --hard`, `git clean -fd`, or any bulk delete.
+- Sending project data anywhere except the app's own APIs (Band, Groq, Gemini). No new `curl`/`wget`
+  POSTs to other hosts. Never echo or commit `.env` / `agent_config.yaml` contents.
+- Editing anything outside `/Users/nivish/development/Band-of-agents`.
+
+**ALLOWED (this is the whole point of autonomy):** run the venv Python, `run_all.py`, `seed.py`,
+`pytest`, `black`, the dump/inspect scripts; create/edit files under the project; write `docs/*`.
+
+**When you hit something forbidden or are genuinely unsure about an irreversible step:** STOP, write
+the open question + your recommendation into `docs/status.md` under a "BLOCKED — needs human" heading,
+and move on to other allowed work. Do not guess your way through an irreversible action.
+
+**Reporting honesty:** do not mark a step "complete" or "verified" unless you have the actual evidence
+(the real room messages / passing test output) in hand and saved to `docs/evidence/`. Earlier reports
+claimed success that the room did not show — the planner cold-verifies against `docs/evidence/*`, so a
+false "done" will be caught. State what actually happened, including failures and skips.
