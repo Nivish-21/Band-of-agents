@@ -65,12 +65,12 @@ demo surface.
 | Slide Presentation | `docs/slides.pdf` (rendered from `slides.md`) | ready |
 | Video Presentation | script at `docs/recording-script.md` — **needs recording** | TODO (you) |
 | Public GitHub Repo | `github.com/Nivish-21/Band-of-agents` — **confirm it is public** + push latest | TODO (you) |
-| Application URL / Demo Platform | no frontend — see note below | DECISION NEEDED |
+| Application URL / Demo Platform | `web/` Next.js showcase — deploy to Vercel | ready to deploy |
 
 ## Note on "Application URL / Demo Application Platform"
-ClaimBand has no frontend by design; the demo surface is the live Band room. Options, safest first:
-1. Use the **video** as the demo (record the live Band-room relay) and put the **GitHub repo URL**
-   as the application link, if the form allows a repo/video in place of a hosted app.
-2. If a working Band room link is acceptable, share the demo room URL on band.ai.
-3. Only if lablab *hard-requires* a hosted, clickable web app: that means building and deploying a
-   small frontend (claim submit form + live room/trail view) — real additional scope, not started.
+A static showcase frontend now exists in `web/` (Next.js, dark control-room aesthetic). It replays the
+three REAL captured runs — claim → animated 4-agent relay (framework/vendor badges, blocks filling) →
+verdict → the actual Band room trail. It is fully static (no backend, no secrets) and cannot break in
+front of a judge. **Deploy on Vercel with Root Directory = `web`** (see `web/README.md`); use the
+resulting `*.vercel.app` URL as the Application URL. The live Band room remains the system's real
+demo surface; this site is the legible, always-up presentation of it.

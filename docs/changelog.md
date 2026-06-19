@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-06-19 — Showcase frontend (`web/`) for Vercel (Claude, via impeccable)
+- Built a static Next.js 16 + React 19 + Tailwind v4 showcase in `web/` that replays the three REAL
+  captured runs (clean→APPROVE, deny→DENY, fraud→ESCALATE). Dark "control-room" aesthetic; the
+  4-agent relay is the hero (animated handoff with framework/vendor badges, blocks filling, verdict,
+  and the actual Band room trail). No backend, no secrets — fully static (SSG).
+- Design via the `impeccable` skill: wrote `PRODUCT.md` (brand register, principles) + `DESIGN.md`
+  (palette identity-preserved from `docs/cover.svg`; Bricolage Grotesque / Archivo / JetBrains Mono).
+  Verified in-browser at desktop + mobile; avoided AI-slop patterns (no SaaS-cream, no gradient text,
+  no card-grid filler, mono only for real data).
+- Data: `scripts/build_web_data.py` parses `docs/evidence/dr3-*.txt` → `web/data/scenarios.json`
+  (committed). Every number/decision/message on screen is from a genuine run, not a mock.
+- Verified: `next build` succeeds, fully static; 38 Python tests still pass; black clean (30 files).
+- Deploy: Vercel with **Root Directory = `web`** (see `web/README.md`); no env vars. Updated
+  `docs/submission.md` Application-URL section accordingly.
+
 ## 2026-06-19 — Submission assets: LICENSE, lablab text, cover PNG, slides PDF (Claude)
 - Added `LICENSE` (MIT) — hackathon requires MIT-compliant submissions; none existed before.
 - Added `docs/submission.md` — copy-paste lablab fields: title, short/long description, tags, an

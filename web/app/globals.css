@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* ClaimBand — dark "control-room / signal" theme (palette from docs/cover.svg) */
+@theme {
+  --color-bg: oklch(0.18 0.04 264);
+  --color-surface: oklch(0.225 0.045 264);
+  --color-surface-2: oklch(0.27 0.04 256);
+  --color-line: oklch(0.34 0.035 256);
+
+  --color-ink: oklch(0.98 0.005 248);
+  --color-ink-muted: oklch(0.83 0.028 250);
+  --color-ink-faint: oklch(0.7 0.03 252);
+
+  --color-accent: oklch(0.78 0.13 230);
+  --color-accent-2: oklch(0.72 0.12 280);
+
+  --color-approve: oklch(0.8 0.15 165);
+  --color-escalate: oklch(0.84 0.15 85);
+  --color-deny: oklch(0.72 0.18 25);
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+  background-image:
+    radial-gradient(1100px 560px at 50% -12%, oklch(0.78 0.13 230 / 0.1), transparent 62%),
+    linear-gradient(oklch(0.34 0.035 256 / 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.34 0.035 256 / 0.16) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+  background-attachment: fixed;
+}
+
+::selection {
+  background: oklch(0.78 0.13 230 / 0.3);
+  color: var(--color-ink);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  line-height: 1.04;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "ss01";
+}
+
+/* connector draw-in for the relay */
+@keyframes dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
