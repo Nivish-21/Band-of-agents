@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-06-19 — Submission assets: LICENSE, lablab text, cover PNG, slides PDF (Claude)
+- Added `LICENSE` (MIT) — hackathon requires MIT-compliant submissions; none existed before.
+- Added `docs/submission.md` — copy-paste lablab fields: title, short/long description, tags, an
+  asset checklist, and an honest note on the "Application URL" question (no frontend by design).
+- Exported `docs/cover.png` (1200×630, via `rsvg-convert` from `cover.svg`) for the cover-image field.
+- Exported `docs/slides.pdf` (8pp, pandoc → headless Chrome from `slides.md`); all 12 slides + real
+  evidence excerpts present. `slides.md` remains the canonical Marp source.
+- No installs (used existing rsvg-convert/pandoc/Chrome). No code changed; 38 tests still green.
+- Open items for the human: record the video (script ready), confirm repo is public + push, decide
+  the Application-URL field (a hosted demo would require building+deploying a frontend — not started).
+
 ## 2026-06-19 — One-command demo runner `demo.py` (Claude)
 - Added `demo.py`: end-to-end runner — fresh room → 4 agents up → seed → wait for the live relay
   → capture merged trail to `docs/evidence/dr3-<fixture>.txt` → tear agents down (in a `finally`,
