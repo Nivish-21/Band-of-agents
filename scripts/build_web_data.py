@@ -83,9 +83,16 @@ _MENTION_RE = re.compile(r"@\[\[([0-9a-f\-]+)\]\]")
 
 
 def humanise(text: str) -> str:
-    return _MENTION_RE.sub(
+    """Make a room message human-readable: resolve mentions, drop the raw JSON
+    record block and markdown emphasis, and collapse blank lines. Judges read
+    prose, not JSON."""
+    text = _MENTION_RE.sub(
         lambda m: MENTION_MAP.get(m.group(1), "@" + m.group(1)[:8]), text
-    ).strip()
+    )
+    text = _FENCE_RE.sub("", text)  # strip the embedded claim-record JSON
+    text = text.replace("**", "")  # strip markdown bold markers
+    text = re.sub(r"\n{2,}", "\n", text)  # collapse blank lines
+    return text.strip()
 
 
 def records_in(text: str) -> list[dict]:

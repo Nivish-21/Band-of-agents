@@ -1,5 +1,6 @@
 import Hero from "../components/Hero";
 import Showcase from "../components/Showcase";
+import Sandbox from "../components/Sandbox";
 
 const PILLARS: { title: string; body: string }[] = [
   {
@@ -30,6 +31,12 @@ export default function Home() {
     <main>
       <Hero />
       <Showcase />
+
+      <div className="mx-auto max-w-6xl px-5">
+        <hr className="border-line" />
+      </div>
+
+      <Sandbox />
 
       {/* Why it's built this way */}
       <section

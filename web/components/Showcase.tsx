@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { agents, scenarios } from "../lib/data";
-import AgentNode from "./AgentNode";
+import { scenarios } from "../lib/data";
+import Relay from "./Relay";
 import Verdict from "./Verdict";
 import Trail from "./Trail";
 
@@ -12,31 +12,6 @@ const OUTCOME_COLOR: Record<string, string> = {
   DENY: "var(--color-deny)",
   ESCALATE: "var(--color-escalate)",
 };
-
-const containerVariants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.16, delayChildren: 0.08 } },
-};
-
-function Connector() {
-  return (
-    <div
-      aria-hidden
-      className="flex shrink-0 items-center justify-center py-0.5 md:px-1 md:py-0"
-    >
-      <div className="relative flex items-center justify-center">
-        <span className="block h-6 w-px bg-gradient-to-b from-transparent via-accent/50 to-transparent md:h-px md:w-8 md:bg-gradient-to-r" />
-        <motion.span
-          className="absolute rotate-90 font-display text-lg leading-none text-accent md:rotate-0"
-          animate={{ opacity: [0.45, 1, 0.45] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-        >
-          ›
-        </motion.span>
-      </div>
-    </div>
-  );
-}
 
 function ClaimStrip({
   vehicle,
@@ -160,21 +135,16 @@ export default function Showcase() {
       </div>
 
       {/* Relay */}
-      <motion.ol
-        key={active.key}
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="mb-8 flex flex-col items-stretch gap-3 md:flex-row md:gap-1"
-      >
-        {agents.map((agent, i) => (
-          <ContentsWithConnector key={agent.key} last={i === agents.length - 1}>
-            <AgentNode agent={agent} record={active.record} index={i} />
-          </ContentsWithConnector>
-        ))}
-      </motion.ol>
+      <div className="mb-8">
+        <Relay record={active.record} runKey={active.key} />
+      </div>
 
-      <Verdict scenario={active} />
+      <Verdict
+        outcome={active.outcome}
+        reason={active.reason}
+        finalAmount={active.final_amount}
+        claimId={active.claim_id}
+      />
 
       {/* Audit trail */}
       <div className="mt-14">
@@ -186,20 +156,5 @@ export default function Showcase() {
         <Trail messages={active.messages} />
       </div>
     </section>
-  );
-}
-
-function ContentsWithConnector({
-  children,
-  last,
-}: {
-  children: React.ReactNode;
-  last: boolean;
-}) {
-  return (
-    <>
-      {children}
-      {!last && <Connector />}
-    </>
   );
 }

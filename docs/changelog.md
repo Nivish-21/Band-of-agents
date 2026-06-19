@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-06-19 — Interactive sandbox + human-readable trail (Claude, via impeccable)
+Addresses two judge-facing gaps: judges couldn't test their own inputs, and the trail showed raw JSON.
+- **"Adjudicate your own claim" sandbox** (`web/components/Sandbox.tsx`): an editable claim form +
+  presets (clean/deny/fraud) that runs the relay live and shows the verdict. Powered by
+  `web/lib/engine.ts` — a faithful TypeScript port of the deterministic Python rules
+  (`validate_claim`, `compute_coverage`, `score_risk`, `adjudicate_claim`). Because the LLM is never
+  on the data path (D13), the exact same logic runs client-side; no backend, still static on Vercel.
+  Honestly labelled "same rules the agents run, computed in your browser; the live Band relay is the replay."
+- **Verified the port matches Python** in-browser: clean→APPROVE $3,700, deny→DENY (expired),
+  fraud→ESCALATE risk 60 — identical to the captured runs. Edits recompute live.
+- **De-JSON'd the trail:** `build_web_data.py` now strips the fenced JSON record block and markdown
+  bold from room messages, so the audit trail reads as plain prose. No raw JSON anywhere in the UI.
+- Refactor: extracted shared `Relay` component (used by replay + sandbox); `Verdict` now takes plain
+  props. Hero gains an "Adjudicate your own claim" CTA.
+- Verified: `next build` clean (static); 38 py tests pass; black clean (30 files).
+
 ## 2026-06-19 — Showcase frontend (`web/`) for Vercel (Claude, via impeccable)
 - Built a static Next.js 16 + React 19 + Tailwind v4 showcase in `web/` that replays the three REAL
   captured runs (clean→APPROVE, deny→DENY, fraud→ESCALATE). Dark "control-room" aesthetic; the

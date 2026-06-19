@@ -122,19 +122,30 @@ export default function Hero() {
         ))}
       </motion.dl>
 
-      <motion.a
+      <motion.div
         custom={5}
         variants={fadeUp}
         initial="hidden"
         animate="show"
-        href="#demo"
-        className="mt-12 inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-ink"
+        className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm"
       >
-        Watch a claim get adjudicated
-        <span aria-hidden className="text-accent">
-          ↓
-        </span>
-      </motion.a>
+        <a
+          href="#demo"
+          className="inline-flex items-center gap-2 text-ink-muted transition-colors hover:text-ink"
+        >
+          Watch a claim get adjudicated
+          <span aria-hidden className="text-accent">
+            ↓
+          </span>
+        </a>
+        <a
+          href="#try"
+          className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 font-medium text-accent transition-colors hover:bg-accent/20"
+        >
+          Adjudicate your own claim
+          <span aria-hidden>→</span>
+        </a>
+      </motion.div>
     </header>
   );
 }

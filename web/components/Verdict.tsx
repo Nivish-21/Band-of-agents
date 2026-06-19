@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import type { Scenario } from "../lib/data";
 
 const META: Record<
   string,
@@ -16,13 +15,25 @@ const META: Record<
   },
 };
 
-export default function Verdict({ scenario }: { scenario: Scenario }) {
-  const meta = META[scenario.outcome] ?? {
+interface VerdictProps {
+  outcome: string;
+  reason: string;
+  finalAmount: number | null;
+  claimId: string;
+}
+
+export default function Verdict({
+  outcome,
+  reason,
+  finalAmount,
+  claimId,
+}: VerdictProps) {
+  const meta = META[outcome] ?? {
     color: "var(--color-ink)",
     icon: "•",
-    line: scenario.outcome,
+    line: outcome,
   };
-  const amount = scenario.final_amount;
+  const amount = finalAmount;
 
   return (
     <motion.div
@@ -53,19 +64,19 @@ export default function Verdict({ scenario }: { scenario: Scenario }) {
         </div>
         <div className="min-w-0">
           <p className="mono text-[11px] uppercase tracking-wider text-ink-faint">
-            Final decision · {scenario.claim_id}
+            Final decision · {claimId}
           </p>
           <p
             className="font-display text-3xl font-extrabold sm:text-4xl"
             style={{ color: meta.color }}
           >
-            {scenario.outcome}
+            {outcome}
           </p>
         </div>
-        {amount != null && scenario.outcome !== "DENY" && (
+        {amount != null && outcome !== "DENY" && (
           <div className="ml-auto text-right">
             <p className="mono text-[11px] uppercase tracking-wider text-ink-faint">
-              {scenario.outcome === "APPROVE" ? "Payable" : "Amount under review"}
+              {outcome === "APPROVE" ? "Payable" : "Amount under review"}
             </p>
             <p className="font-display text-3xl font-bold text-ink">
               ${amount.toLocaleString()}
@@ -74,7 +85,7 @@ export default function Verdict({ scenario }: { scenario: Scenario }) {
         )}
       </div>
       <p className="mt-5 max-w-[70ch] text-sm leading-relaxed text-ink-muted">
-        {scenario.reason}
+        {reason}
       </p>
     </motion.div>
   );

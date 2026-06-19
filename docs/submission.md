@@ -68,9 +68,11 @@ demo surface.
 | Application URL / Demo Platform | `web/` Next.js showcase — deploy to Vercel | ready to deploy |
 
 ## Note on "Application URL / Demo Application Platform"
-A static showcase frontend now exists in `web/` (Next.js, dark control-room aesthetic). It replays the
+A static showcase frontend now exists in `web/` (Next.js, dark control-room aesthetic). It (a) replays the
 three REAL captured runs — claim → animated 4-agent relay (framework/vendor badges, blocks filling) →
-verdict → the actual Band room trail. It is fully static (no backend, no secrets) and cannot break in
-front of a judge. **Deploy on Vercel with Root Directory = `web`** (see `web/README.md`); use the
+verdict → the actual Band room trail (plain prose, no JSON); and (b) has an **interactive "Adjudicate your
+own claim" sandbox** where judges edit a claim and get a live verdict from the same deterministic rules the
+agents run (ported to TypeScript, runs in-browser — verified to match the Python). It is fully static
+(no backend, no secrets) and cannot break in front of a judge. **Deploy on Vercel with Root Directory = `web`** (see `web/README.md`); use the
 resulting `*.vercel.app` URL as the Application URL. The live Band room remains the system's real
 demo surface; this site is the legible, always-up presentation of it.
