@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-06-19 — One-command demo runner `demo.py` (Claude)
+- Added `demo.py`: end-to-end runner — fresh room → 4 agents up → seed → wait for the live relay
+  → capture merged trail to `docs/evidence/dr3-<fixture>.txt` → tear agents down (in a `finally`,
+  so none are orphaned). Modes: `demo.py <fixture>`, `demo.py --all` (sequential — one key per
+  agent), `--keep-up`. Deterministic completion detection (adjudicator terminal-handoff marker),
+  pre-flight/relay timeouts, honest non-zero exit on failure. Gemini 429 treated as non-fatal.
+- Refactored for reuse (no logic change): `create_new_room.main()` returns the room id;
+  `seed.main(fixture_name=None)` accepts an arg; `dump_room_trail.build_trail(room_id)` extracted.
+- Tests: `tests/test_demo.py` — 15 unit tests on the pure helpers (CLI parse, room-id extraction,
+  done-marker detection, decision extraction). Live REST/relay path stays manual. Suite now **38 pass**.
+- **Live smoke verified:** `demo.py clean.json` ran clean room `2fc75cc5…` → APPROVE, agents torn
+  down (0 left), exit 0. (Smoke overwrote `dr3-clean.txt`; restored the committed capture md5 `9de9afa6`.)
+- README: added a "Quick start — one command" section; kept the manual steps as the detailed path.
+- `black` clean (29 files). No frontend (out of scope); criterion 5 still a separate gap.
+
 ## 2026-06-19 — Startup framework/vendor banner (criterion 4) (Claude)
 - Added a `framework=… vendor=…` print to each agent's `main()` (before `connect OK`):
   Intake/Fraud=LangGraph/Groq, Coverage=Gemini-SDK/Gemini, Adjudicator=CrewAI/Groq.

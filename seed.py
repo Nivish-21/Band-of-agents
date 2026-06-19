@@ -13,13 +13,14 @@ from thenvoi_rest.types.chat_message_request_mentions_item import (
 load_dotenv(override=True)
 
 
-async def main():
-    if len(sys.argv) < 2:
-        print("Usage: python seed.py <fixture_name>")
-        print("Example: python seed.py clean.json")
-        sys.exit(1)
+async def main(fixture_name: str | None = None) -> None:
+    if fixture_name is None:
+        if len(sys.argv) < 2:
+            print("Usage: python seed.py <fixture_name>")
+            print("Example: python seed.py clean.json")
+            sys.exit(1)
+        fixture_name = sys.argv[1]
 
-    fixture_name = sys.argv[1]
     room_id = os.environ.get("BAND_ROOM_ID")
     if not room_id:
         print("Error: BAND_ROOM_ID environment variable not set.")

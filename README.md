@@ -49,6 +49,24 @@ graph TD
 
 ## Running the Demo
 
+### Quick start — one command
+
+`demo.py` runs the whole flow end-to-end with zero manual steps: it creates a fresh room,
+brings up all four agents, waits for pre-flight, seeds the claim, waits for the live relay to
+finish, captures the merged trail to `docs/evidence/dr3-<fixture>.txt`, then tears the agents down.
+
+```bash
+PYTHONPATH=. python demo.py clean.json     # one fixture (→ APPROVE)
+PYTHONPATH=. python demo.py --all          # clean → deny → fraud, each in its own room
+PYTHONPATH=. python demo.py fraud.json --keep-up   # leave agents running afterwards
+```
+
+Because each agent holds a single Band key (one room at a time), `--all` runs the fixtures
+**sequentially**, never concurrently. The runner prints a per-fixture summary line, e.g.
+`clean.json -> APPROVE [OK] (room <id>, md5 <sum>)`, and exits non-zero if any relay fails to complete.
+
+### Manual steps (what `demo.py` automates)
+
 Order matters: the room must exist **before** the agents start, because they read
 `BAND_ROOM_ID` from `.env` on connect.
 

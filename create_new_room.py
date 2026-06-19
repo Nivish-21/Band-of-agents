@@ -8,7 +8,7 @@ from thenvoi_rest import ChatRoomRequest, ParticipantRequest
 load_dotenv()
 
 
-async def main():
+async def main() -> str:
     agent_id, api_key = load_agent_config("intake")
     rest_url = os.environ.get("BAND_REST_URL").rstrip("/")
     client = AsyncRestClient(api_key=api_key, base_url=rest_url)
@@ -59,6 +59,7 @@ async def main():
         f.writelines(new_env_lines)
 
     print(f"Successfully updated {env_path} with new room ID: {room_id}")
+    return room_id
 
 
 if __name__ == "__main__":

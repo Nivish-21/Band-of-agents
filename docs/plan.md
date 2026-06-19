@@ -321,3 +321,75 @@ Fix in this exact priority order, then dry-run. Confirm two facts first: **OWNER
 - Touch only: `claimband/*`, `run_all.py`, `docs/*`, room-housekeeping scripts. No new frameworks/scope.
 - Secrets stay gitignored. Destructive ops (room/message deletion) → confirm first.
 - Do NOT re-litigate D13/D14 — the relay is verified; build on it.
+
+---
+
+## TASK BLOCK — `demo.py` one-command runner (2026-06-19, AWAITING APPROVAL)
+
+### Goal
+One command runs an end-to-end demo with zero manual steps: fresh room → 4 agents up →
+seed a fixture → wait for the live relay to finish → capture the trail → tear the agents down.
+The *relay* is already autonomous; this only removes the manual launch plumbing
+(`create_new_room.py` → `run_all.py` → `seed.py` → dump → kill).
+
+### Hard constraint (why it cannot parallelise)
+Each agent holds ONE Band key, so it can be in only one room at a time. `--all` MUST run the
+three fixtures **sequentially**, each in its own fresh room. No concurrency across fixtures.
+
+### Interface
+- `PYTHONPATH=. ./.venv/bin/python demo.py clean.json` — single fixture, fresh room.
+- `PYTHONPATH=. ./.venv/bin/python demo.py --all` — clean → deny → fraud, each in its own room.
+- Optional `--keep-up` — leave agents running after capture (for manual poking). Default: tear down.
+- Exit code 0 only if the relay completed (adjudicator verdict seen) AND a non-empty trail captured;
+  non-zero on pre-flight failure, relay timeout, or empty trail.
+
+### Design (reuse verified pieces; no logic rewrite)
+`demo.py` orchestrates, owning the agent subprocesses itself (so the harness/parent tracks them and
+they don't get orphaned — the failure mode noted in GEMINI.md). Per fixture:
+1. **Fresh room** — call `create_new_room.main()` (import, not shell) → it adds the 5 participants and
+   writes `BAND_ROOM_ID` into `.env`. Then `load_dotenv(override=True)` to pick up the new id.
+2. **Launch agents** — replicate `run_all.py`'s `asyncio.create_subprocess_exec` for the 4 agents,
+   streaming their stdout. Detect readiness by watching for 4× `connect OK` on the SAME room id +
+   the existing `PRE-FLIGHT OK` assertion. Abort + cleanup if not ready within `PREFLIGHT_TIMEOUT_S` (e.g. 30s).
+3. **Seed** — call `seed.main(fixture)` (import) once pre-flight passes.
+4. **Wait for completion (deterministic, no fixed sleep)** — watch the agent stdout stream for the
+   adjudicator terminal marker (`[adjudicator] handoff ->`). Cap at `RELAY_TIMEOUT_S` (e.g. 180s).
+   A Gemini 429 on the coverage note is EXPECTED and non-fatal (template fallback) — do not treat as failure.
+5. **Capture** — run the merged 4-key dump (reuse `dump_room_trail` logic) → `docs/evidence/dr3-<stem>.txt`.
+   Verify the file is non-empty, greps to exactly one `claim_id`, and contains a decision status.
+6. **Teardown** — terminate the 4 agent subprocesses in a `finally` (terminate → wait → kill on timeout),
+   so no orphans survive even on error/Ctrl-C. Do NOT delete the room (guardrail: no deletions).
+7. **Report** — print a one-line summary per fixture: `<fixture> → <DECISION> (room <id>, md5 <sum>)`.
+
+### Constants (named, top of file)
+`PREFLIGHT_TIMEOUT_S`, `RELAY_TIMEOUT_S`, `AGENTS`, `FIXTURES` (clean/deny/fraud), `ADJUDICATOR_DONE_MARKER`.
+
+### Standards
+Strict type hints on all functions; imports at top; explicit errors (raise, don't swallow); `black` clean.
+Pure helpers extracted so they're testable.
+
+### Tests
+- `tests/test_demo.py`: unit-test the pure helpers only — completion-marker detection over a sample
+  stdout buffer, room-id consistency check, and CLI arg parsing (single vs `--all`). NOT the live path
+  (live REST/relay stays manual/integration). Keep the suite honest: state it's +N unit tests, no live mock.
+
+### Files touched
+- NEW: `demo.py`, `tests/test_demo.py`.
+- Possibly minor: factor `dump_room_trail.py`'s dump into an importable function if cleaner (otherwise call as-is).
+- No changes to `claimband/*` agent/relay/scoring logic.
+
+### Out of scope / explicitly NOT doing
+- No room deletion / hygiene (guardrail). No frontend (locked out of scope). No new vendor/framework.
+- Not solving criterion 5 (peer-discovery) — separate, still BLOCKED.
+
+### Risk
+Low. Pure orchestration over already-verified scripts. Main risk is subprocess lifecycle (orphans);
+mitigated by `finally` teardown + the existing `serve()` reconnect being irrelevant once we kill the parent.
+
+### Steps
+- [x] D1 — Extract/confirm reusable entry points (`create_new_room.main` returns id, `seed.main(arg)`, `dump_room_trail.build_trail`).
+- [x] D2 — Write `demo.py`: arg parse → per-fixture orchestrate (room → agents → preflight → seed → wait → capture → teardown).
+- [x] D3 — Timeouts + `finally` teardown + honest non-zero exits.
+- [x] D4 — `tests/test_demo.py` (15 unit tests on pure helpers); `black` clean; full suite 38 green.
+- [x] D5 — Live smoke: `demo.py clean.json` → room `2fc75cc5…` → APPROVE [OK], agents torn down, exit 0.
+- [x] D6 — README (one-command demo), `docs/status.md`, `docs/changelog.md` updated. Commit done; push only if asked.

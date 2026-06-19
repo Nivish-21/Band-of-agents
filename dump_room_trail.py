@@ -21,8 +21,12 @@ async def get_agent_messages(agent_name, room_id):
         return []
 
 
-async def main():
-    room_id = os.environ.get("BAND_ROOM_ID")
+async def build_trail(room_id: str) -> str:
+    """Return the merged, de-duplicated, time-sorted room trail as a string.
+
+    Unions every agent key's view of the room (the verdict is only visible
+    because it is broadcast to all agents) and dedupes by message id.
+    """
     agents = ["intake", "coverage", "fraud", "adjudicator"]
 
     tasks = [get_agent_messages(name, room_id) for name in agents]
@@ -35,13 +39,22 @@ async def main():
 
     sorted_messages = sorted(all_messages.values(), key=lambda x: x.inserted_at)
 
-    print(f"Total unique messages found across all agents: {len(sorted_messages)}")
+    lines = [f"Total unique messages found across all agents: {len(sorted_messages)}"]
     for idx, m in enumerate(sorted_messages):
         sender = m.sender_name or m.sender_type or "Unknown"
-        print(
+        lines.append(
             f"\n--- MESSAGE #{idx+1} | Sender: {sender} | Time: {m.inserted_at} | ID: {m.id} ---"
         )
-        print(m.content)
+        lines.append(m.content)
+    return "\n".join(lines)
+
+
+async def main() -> None:
+    room_id = os.environ.get("BAND_ROOM_ID")
+    if not room_id:
+        print("Error: BAND_ROOM_ID environment variable not set.")
+        return
+    print(await build_trail(room_id))
 
 
 if __name__ == "__main__":

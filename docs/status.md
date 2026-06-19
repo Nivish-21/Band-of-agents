@@ -155,3 +155,16 @@ right before `connect OK`. Live-captured evidence in `docs/evidence/startup-bann
 shown directly in the startup log → **criterion 4 = PASS**. BLOCKED item 4 above is resolved.
 Verified after the edit: 23 tests pass, `black --check` clean on 27 files.
 **Revised acceptance net: 5 PASS, 1 FAIL (criterion 5 peer-discovery still a deliberate gap — BLOCKED item 3).**
+
+## UPDATE (2026-06-19, Claude) — one-command demo runner `demo.py` added
+Per user request (plan block "demo.py one-command runner" in `docs/plan.md`, approved). The relay was
+already autonomous; this removes the manual launch plumbing. `demo.py <fixture>` / `--all` / `--keep-up`
+does: fresh room → 4 agents → pre-flight → seed → wait for relay → capture trail → teardown (in `finally`,
+no orphans). Refactored `create_new_room.main()` (returns room id), `seed.main(arg)`, and
+`dump_room_trail.build_trail()` for reuse — no logic change. 15 new unit tests on the pure helpers;
+**suite now 38 pass, black clean (29 files).**
+**Live smoke verified:** `demo.py clean.json` → room `2fc75cc5…` → APPROVE [OK], agents torn down (0 left),
+exit 0. `demo.py` writes to `docs/evidence/dr3-<fixture>.txt` by design; the smoke overwrote
+`dr3-clean.txt` so the committed capture (md5 `9de9afa6…`) was restored to keep the criteria table accurate.
+Plan steps D1–D6 complete. NOTE: this run created one more room (`2fc75cc5…`) — add it to the orphan-cleanup
+list under BLOCKED item 1; still not deleting anything.
